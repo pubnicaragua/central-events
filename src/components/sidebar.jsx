@@ -41,7 +41,7 @@ export function Sidebar() {
                                     Panel
                                 </Link>
                                 <Link
-                                    to="/settings"
+                                    to="/manage/event/settings"
                                     className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-300 hover:text-white"
                                 >
                                     <Settings className="h-4 w-4" />
