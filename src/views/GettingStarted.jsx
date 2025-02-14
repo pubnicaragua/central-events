@@ -1,17 +1,20 @@
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Link } from "react-router-dom"
 import { Ticket, Settings, Layout, Radio, CreditCard, Mail, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 export default function GettingStarted() {
+  const { eventId } = useParams();
+  const location = useLocation();
+  const eventName = location.state?.eventName || "Evento sin nombre";
+  const navigate = useNavigate();
+
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8">
       <div className="flex items-center gap-4 text-sm text-gray-600">
         <Link to="/events">Eventos</Link>
         <ChevronRight className="h-4 w-4" />
-        <Link to="/events/master-productions">Master Producciones</Link>
-        <ChevronRight className="h-4 w-4" />
-        <span>El primer evento</span>
-        <span className="rounded bg-gray-100 px-2 py-1 text-xs">DRAFT - EN CURSO</span>
+        <Link to={`/manage/event/${eventId}/getting-started`}>{eventName}</Link>
       </div>
 
       <div className="flex items-center justify-between">
@@ -48,7 +51,8 @@ export default function GettingStarted() {
           <p className="mt-2 text-sm text-gray-600">
             Agregue detalles del evento y administre la configuración del evento.
           </p>
-          <Button className="mt-4" variant="secondary">
+          <Button className="mt-4" variant="secondary" 
+           onClick={() => navigate(`/manage/event/${eventId}/settings`, { state: { eventId, eventName } })}>
             Configura tu evento
           </Button>
         </div>
