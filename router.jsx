@@ -13,15 +13,11 @@ import EventConfig from "./src/views/EventConfig"
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <DashboardLayout />,
+    element: <WelcomeLayout />,
     children: [
       {
         index: true,
-        element: <GettingStarted />,
-      },
-      {
-        path: "getting-started",
-        element: <GettingStarted />,
+        element: <Events />,
       },
     ],
   },
@@ -32,16 +28,6 @@ const router = createBrowserRouter([
       {
         index: true,
         element: <Welcome />,
-      },
-    ],
-  },
-  {
-    path: "/manage",
-    element: <WelcomeLayout />,
-    children: [
-      {
-        path: "events",
-        element: <Events />,
       },
     ],
   },
