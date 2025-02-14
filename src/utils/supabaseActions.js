@@ -64,3 +64,20 @@ export async function getTimezones() {
   }
 }
 
+// Función para actualizar un evento en Supabase
+export async function updateEvent(eventId, updatedFields) {
+  try {
+    const { data, error } = await supabase
+      .from("events")
+      .update(updatedFields)
+      .eq("id", eventId)
+      .select()
+
+    if (error) throw error
+
+    return data[0]
+  } catch (error) {
+    console.error("Error updating event:", error)
+    throw error
+  }
+}
