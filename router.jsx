@@ -8,6 +8,7 @@ import Register from "./src/views/Register"
 import Welcome from "./src/views/Welcome"
 import Events from "./src/views/Events"
 import GettingStarted from "./src/views/GettingStarted"
+import EventConfig from "./src/views/EventConfig"
 
 const router = createBrowserRouter([
   {
@@ -41,6 +42,20 @@ const router = createBrowserRouter([
       {
         path: "events",
         element: <Events />,
+      },
+    ],
+  },
+  {
+    path: "/manage/event",
+    element: <DashboardLayout />,
+    children: [
+      {
+        path: ":eventId/getting-started",
+        element: <GettingStarted />,
+      },
+      {
+        path: ":eventId/settings",
+        element: <EventConfig />,
       },
     ],
   },
