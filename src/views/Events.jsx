@@ -3,10 +3,14 @@
 import { useState, useEffect } from "react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Calendar, MoreVertical, Eye, Settings, Copy, Archive } from "lucide-react"
+import { Calendar, MoreVertical, Eye, Settings, Copy, Archive, Plus, User } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { getEvents, createEvent } from "../utils/eventsActions"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { getEvents } from "../utils/eventsActions"
+import { OrganizerForm } from "../components/organizer-form"
+import { CreateEventModal } from "../components/create-event-modal"
+import supabase from "../api/supabase"
 
 export default function EventsPage() {
   const [events, setEvents] = useState([])
@@ -14,10 +18,22 @@ export default function EventsPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [sortBy, setSortBy] = useState("start_date_desc")
   const [loading, setLoading] = useState(true)
+  const [openModal, setOpenModal] = useState(false)
+  const [openEventModal, setOpenEventModal] = useState(false)
+  // Añadir el estado para los organizadores
+  const [organizers, setOrganizers] = useState([])
+
+  useEffect(() => {
+    const fetchOrganizers = async () => {
+      const { data, } = await supabase.from("organizers").select("*")
+      if (data) setOrganizers(data)
+    }
+    fetchOrganizers()
+  }, [])
 
   useEffect(() => {
     fetchEvents()
-  }, [status, searchTerm, sortBy]) // Only refetch when the component mounts
+  }, []) // Only refetch when the component mounts
 
   const fetchEvents = async () => {
     setLoading(true)
@@ -31,21 +47,14 @@ export default function EventsPage() {
     }
   }
 
-  const handleCreateEvent = async () => {
-    try {
-      const newEvent = await createEvent({
-        name: "Nuevo Evento",
-        start_date: new Date().toISOString(),
-        end_date: new Date(Date.now() + 86400000).toISOString(),
-        status: "Próximo", // Cambiado de "draft" a "Próximo"
-        organizer_id: 1,
-      });
-      setEvents([newEvent, ...events]);
-    } catch (error) {
-      console.error("Error creando el evento:", error);
-    }
-  };
+  const handleCreateOrganizer = () => {
+    setOpenModal(true) // Abre el modal cuando se haga clic en "Crear Organizador"
+  }
 
+  // Reemplazar la función handleCreateEvent con esta versión:
+  const handleCreateEvent = () => {
+    setOpenEventModal(true)
+  }
 
   const formatDate = (date) => {
     const d = new Date(date)
@@ -58,7 +67,6 @@ export default function EventsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-purple-800">Próximos eventos</h2>
@@ -83,10 +91,42 @@ export default function EventsPage() {
               <SelectItem value="start_date_asc">Fecha de inicio más antigua</SelectItem>
             </SelectContent>
           </Select>
-          <Button className="bg-green-500 hover:bg-green-600" onClick={handleCreateEvent}>
-            + Crear nuevo
-          </Button>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button className="bg-green-500 hover:bg-green-600 flex items-center">
+                <Plus className="h-4 w-4 mr-2" />
+                Crear nuevo
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={handleCreateEvent}>
+                <Calendar className="mr-2 h-4 w-4" />
+                Evento
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleCreateOrganizer}>
+                <User className="mr-2 h-4 w-4" />
+                Organizador
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
+
+        {/* Modificar el renderizado del CreateEventModal */}
+        <CreateEventModal
+          open={openEventModal}
+          setOpen={setOpenEventModal}
+          organizers={organizers}
+          onEventCreated={fetchEvents}
+        />
+        <Dialog open={openModal} onOpenChange={setOpenModal}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Crear organizador</DialogTitle>
+            </DialogHeader>
+            <OrganizerForm onSubmit={() => setOpenModal(false)} />
+          </DialogContent>
+        </Dialog>
 
         <div className="mb-6">
           <nav className="flex gap-4">
@@ -109,7 +149,6 @@ export default function EventsPage() {
               Archivado
             </button>
           </nav>
-
         </div>
 
         {loading ? (
