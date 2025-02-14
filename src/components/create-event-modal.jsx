@@ -57,7 +57,7 @@ export function CreateEventModal({ open, setOpen, organizers, onEventCreated }) 
       setOpen(false)
 
       // Redirigir a getting-started con la información del evento
-      navigate("/getting-started", {
+      navigate(`/manage/event/${newEvent.id}/getting-started`, {
         state: {
           eventId: newEvent.id,
           eventName: newEvent.name,
