@@ -1,19 +1,27 @@
 "use client"
 
 import { useState } from "react"
+import { useParams } from "react-router-dom";
 import { ChevronRight } from "lucide-react"
 import { BasicDetailsForm } from "./basic-details-form"
 import { LocationForm } from "./location-form"
-// import { PaymentSettingsForm } from "./payment-settings-form"
-// import { SeoSettingsForm } from "./seo-settings-form"
-// import { EmailSettingsForm } from "./email-settings-form"
-// import { OtherSettingsForm } from "./other-settings-form"
+import { PaymentSettingsForm } from "./payment-settings-form"
+import { SeoSettingsForm } from "./seo-settings-form"
+import { EmailSettingsForm } from "./email-settings-form"
+import { OtherSettingsForm } from "./other-settings-form"
 
 export default function EventSettings() {
+  const params = useParams();
+  const eventId = params?.eventId || null; // ✅ Asegurar que `eventId` sea válido
+
   const [eventData] = useState({
     name: "Nuevo Evento",
     status: "DRAFT - PRÓXIMO",
   })
+
+  if (!eventId) {
+    return <div className="text-red-500">Error: No se encontró el evento.</div>;
+  }
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-2">
@@ -31,11 +39,11 @@ export default function EventSettings() {
 
         <div className="space-y-6">
           <BasicDetailsForm />
-          <LocationForm />
-          {/* <PaymentSettingsForm />
-          <SeoSettingsForm />
-          <EmailSettingsForm />
-          <OtherSettingsForm /> */}
+          <LocationForm eventId={eventId} /> {/* ✅ Pasar eventId como prop */}
+          <PaymentSettingsForm eventId={eventId} /> {/* ✅ Pasar eventId como prop */}
+          <SeoSettingsForm eventId={eventId} /> {/* ✅ Ahora eventId siempre será válido */}
+          <EmailSettingsForm eventId={eventId} />
+          <OtherSettingsForm eventId={eventId} />
         </div>
       </div>
     </div>
