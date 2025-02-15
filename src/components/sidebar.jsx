@@ -2,7 +2,8 @@ import { Link, useLocation } from "react-router-dom"
 import { LayoutDashboard, Settings, Ticket, Users, ShoppingCart, HelpCircle, Tag, MessageSquare, Users2, ClipboardList, Palette, Code2 } from 'lucide-react'
 
 export function Sidebar() {
-    const location = useLocation()
+    const location = useLocation();
+    const eventId = location.pathname.split("/")[3]; // Extraer el eventId de la URL
 
     return (
         <div className="hidden border-r bg-gray-700/95 lg:block">
@@ -16,8 +17,8 @@ export function Sidebar() {
                 <div className="flex-1 overflow-auto py-2">
                     <nav className="grid items-start px-4 text-sm font-medium">
                         <Link
-                            to="/manage/event/getting-started"
-                            className={`flex items-center gap-3 rounded-lg px-3 py-2 ${location.pathname === '/manage/event/getting-started'
+                            to={`/manage/event/${eventId}/getting-started`}
+                            className={`flex items-center gap-3 rounded-lg px-3 py-2 ${location.pathname === `/manage/event/${eventId}/getting-started`
                                     ? 'bg-purple-600 text-white'
                                     : 'text-gray-300 hover:text-white'
                                 }`}
@@ -34,8 +35,8 @@ export function Sidebar() {
                             <h4 className="px-2 py-2 text-xs font-semibold text-gray-400">Administrar</h4>
                             <div className="grid gap-1">
                                 <Link
-                                    to="/manage/event/dashboard"
-                                    className={`flex items-center gap-3 rounded-lg px-3 py-2 ${location.pathname === '/manage/event/dashboard'
+                                    to={`/manage/event/${eventId}/dashboard`}
+                                    className={`flex items-center gap-3 rounded-lg px-3 py-2 ${location.pathname === `/manage/event/${eventId}/dashboard`
                                         ? 'bg-purple-600 text-white'
                                         : 'text-gray-300 hover:text-white'
                                     }`}
@@ -44,8 +45,8 @@ export function Sidebar() {
                                     Panel
                                 </Link>
                                 <Link
-                                    to="/manage/event/settings"
-                                    className={`flex items-center gap-3 rounded-lg px-3 py-2 ${location.pathname === '/manage/event/settings'
+                                    to="/manage/event/${eventId}/settings"
+                                    className={`flex items-center gap-3 rounded-lg px-3 py-2 ${location.pathname === '/manage/event/${eventId}/settings'
                                         ? 'bg-purple-600 text-white'
                                         : 'text-gray-300 hover:text-white'
                                     }`}
@@ -54,8 +55,8 @@ export function Sidebar() {
                                     Ajustes
                                 </Link>
                                 <Link
-                                    to="/manage/event/tickets"
-                                    className={`flex items-center gap-3 rounded-lg px-3 py-2 ${location.pathname === '/manage/event/tickets'
+                                    to="/manage/event/${eventId}/tickets"
+                                    className={`flex items-center gap-3 rounded-lg px-3 py-2 ${location.pathname === '/manage/event/${eventId}/tickets'
                                         ? 'bg-purple-600 text-white'
                                         : 'text-gray-300 hover:text-white'
                                     }`}
@@ -64,8 +65,8 @@ export function Sidebar() {
                                     Entradas
                                 </Link>
                                 <Link
-                                    to="/manage/event/attendees"
-                                    className={`flex items-center gap-3 rounded-lg px-3 py-2 ${location.pathname === '/manage/event/attendees'
+                                    to="/manage/event/${eventId}/attendees"
+                                    className={`flex items-center gap-3 rounded-lg px-3 py-2 ${location.pathname === '/manage/event/${eventId}/attendees'
                                         ? 'bg-purple-600 text-white'
                                         : 'text-gray-300 hover:text-white'
                                     }`}

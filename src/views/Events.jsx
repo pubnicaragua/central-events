@@ -1,41 +1,29 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Input } from "@/components/ui/input"
+import PropTypes from "prop-types"
+import { useState, useEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
+import { Link } from "react-router-dom"
 import { Calendar, MoreVertical, Eye, Settings, Copy, Archive, Plus, User } from "lucide-react"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { getEvents } from "../utils/eventsActions"
 import { OrganizerForm } from "../components/organizer-form"
 import { CreateEventModal } from "../components/create-event-modal"
+import { EventFilters } from "../components/manage/event-filters"
 import supabase from "../api/supabase"
 
 export default function EventsPage() {
   const [events, setEvents] = useState([])
-  const [status, setStatus] = useState("upcoming")
+  const [status, setStatus] = useState("Próximo")
   const [searchTerm, setSearchTerm] = useState("")
   const [sortBy, setSortBy] = useState("start_date_desc")
   const [loading, setLoading] = useState(true)
   const [openModal, setOpenModal] = useState(false)
   const [openEventModal, setOpenEventModal] = useState(false)
-  // Añadir el estado para los organizadores
   const [organizers, setOrganizers] = useState([])
 
-  useEffect(() => {
-    const fetchOrganizers = async () => {
-      const { data, } = await supabase.from("organizers").select("*")
-      if (data) setOrganizers(data)
-    }
-    fetchOrganizers()
-  }, [])
-
-  useEffect(() => {
-    fetchEvents()
-  }, []) // Only refetch when the component mounts
-
-  const fetchEvents = async () => {
+  const fetchEvents = useCallback(async () => {
     setLoading(true)
     try {
       const eventsData = await getEvents(status, searchTerm, sortBy)
@@ -45,13 +33,21 @@ export default function EventsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [status, searchTerm, sortBy])
+
+  useEffect(() => {
+    const fetchOrganizers = async () => {
+      const { data } = await supabase.from("organizers").select("*")
+      if (data) setOrganizers(data)
+    }
+    fetchOrganizers()
+    fetchEvents()
+  }, [fetchEvents])
 
   const handleCreateOrganizer = () => {
-    setOpenModal(true) // Abre el modal cuando se haga clic en "Crear Organizador"
+    setOpenModal(true)
   }
 
-  // Reemplazar la función handleCreateEvent con esta versión:
   const handleCreateEvent = () => {
     setOpenEventModal(true)
   }
@@ -72,25 +68,16 @@ export default function EventsPage() {
           <h2 className="text-3xl font-bold text-purple-800">Próximos eventos</h2>
         </div>
 
-        <div className="mb-6 flex items-center gap-4">
-          <div className="flex-1">
-            <Input
-              type="search"
-              placeholder="Buscar por nombre del evento..."
-              className="max-w-md"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-          <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="w-[280px]">
-              <SelectValue placeholder="Ordenar por" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="start_date_desc">Fecha de inicio más reciente</SelectItem>
-              <SelectItem value="start_date_asc">Fecha de inicio más antigua</SelectItem>
-            </SelectContent>
-          </Select>
+        <div className="mb-6 flex items-center justify-between">
+          <EventFilters
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            sortBy={sortBy}
+            setSortBy={setSortBy}
+            status={status}
+            setStatus={setStatus}
+            onFilterChange={fetchEvents}
+          />
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -112,7 +99,6 @@ export default function EventsPage() {
           </DropdownMenu>
         </div>
 
-        {/* Modificar el renderizado del CreateEventModal */}
         <CreateEventModal
           open={openEventModal}
           setOpen={setOpenEventModal}
@@ -127,29 +113,6 @@ export default function EventsPage() {
             <OrganizerForm onSubmit={() => setOpenModal(false)} />
           </DialogContent>
         </Dialog>
-
-        <div className="mb-6">
-          <nav className="flex gap-4">
-            <button
-              onClick={() => setStatus("Próximo")}
-              className={`px-4 py-2 ${status === "Próximo" ? "border-b-2 border-purple-600 text-purple-600" : "text-gray-600 hover:text-gray-800"}`}
-            >
-              Próximo
-            </button>
-            <button
-              onClick={() => setStatus("Terminado")}
-              className={`px-4 py-2 ${status === "Terminado" ? "border-b-2 border-purple-600 text-purple-600" : "text-gray-600 hover:text-gray-800"}`}
-            >
-              Terminado
-            </button>
-            <button
-              onClick={() => setStatus("Archivado")}
-              className={`px-4 py-2 ${status === "Archivado" ? "border-b-2 border-purple-600 text-purple-600" : "text-gray-600 hover:text-gray-800"}`}
-            >
-              Archivado
-            </button>
-          </nav>
-        </div>
 
         {loading ? (
           <div>Cargando eventos...</div>
@@ -170,7 +133,11 @@ export default function EventsPage() {
                         {event.status === "draft" ? "DRAFT - EN CURSO" : event.status.toUpperCase()}
                       </span>
                     </div>
-                    <h3 className="text-lg font-semibold text-gray-800">{event.name}</h3>
+                    <h3 className="text-lg font-semibold text-gray-800">
+                      <Link to={`/manage/event/${event.id}/getting-started`} className="text-blue-600 hover:underline">
+                        {event.name}
+                      </Link>
+                    </h3>
                     <p className="text-sm text-gray-600">Master Producciones</p>
                     <div className="mt-2 flex gap-4 text-sm text-gray-500">
                       <span>0 entradas vendidas</span>
@@ -221,5 +188,21 @@ export default function EventsPage() {
       </main>
     </div>
   )
+}
+
+EventsPage.propTypes = {
+  // Add any props if needed for EventsPage
+}
+
+// Add PropTypes for other components used in this file
+CreateEventModal.propTypes = {
+  open: PropTypes.bool.isRequired,
+  setOpen: PropTypes.func.isRequired,
+  organizers: PropTypes.array.isRequired,
+  onEventCreated: PropTypes.func.isRequired,
+}
+
+OrganizerForm.propTypes = {
+  onSubmit: PropTypes.func.isRequired,
 }
 
