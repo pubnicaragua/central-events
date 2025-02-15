@@ -13,6 +13,8 @@ import TicketPage from "./src/views/TicketPage"
 import AttendePage from "./src/views/AttendeesPage"
 import OrdersPage from "./src/views/OrdersPage"
 import QuestionsPage from "./src/views/QuestionsPage"
+import PromoCodes from "./src/views/PromoCodes"
+import DashboardPage from "./src/views/PanelPage"
 
 const router = createBrowserRouter([
   {
@@ -62,6 +64,18 @@ const router = createBrowserRouter([
       {
         path: "questions",
         element: <QuestionsPage />,
+      },
+      {
+        path: "promo-codes",
+        element: <PromoCodes />,
+      },
+      {
+        path: "dashboard",
+        element: <DashboardPage />,
+      },
+      {
+        path: "settings",
+        element: <GettingStarted />,
       },
     ],
   },

@@ -34,7 +34,7 @@ export function Sidebar() {
                             <h4 className="px-2 py-2 text-xs font-semibold text-gray-400">Administrar</h4>
                             <div className="grid gap-1">
                                 <Link
-                                    to="/dashboard"
+                                    to="/manage/event/dashboard"
                                     className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-300 hover:text-white"
                                 >
                                     <LayoutDashboard className="h-4 w-4" />
@@ -76,7 +76,7 @@ export function Sidebar() {
                                     Preguntas
                                 </Link>
                                 <Link
-                                    to="/promo-codes"
+                                    to="/manage/event/promo-codes"
                                     className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-300 hover:text-white"
                                 >
                                     <Tag className="h-4 w-4" />
