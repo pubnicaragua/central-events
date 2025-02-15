@@ -1,5 +1,6 @@
 "use client"
 
+import { useParams } from "react-router-dom"
 import * as React from "react"
 import { Search, Plus } from "lucide-react"
 
@@ -7,9 +8,46 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { CreateTicketDialog } from "../components/tickets/create-ticket-dialog"
+import { TicketActions } from "../components/tickets/ticket-actions"
+import { getTickets, getEscaledTickets } from "../utils/ticketActions"
 
 export default function TicketsPage() {
   const [open, setOpen] = React.useState(false)
+  const [tickets, setTickets] = React.useState([])
+  const [escaledTickets, setEscaledTickets] = React.useState([])
+  const [isLoading, setIsLoading] = React.useState(true)
+  const { eventId } = useParams()
+
+  const fetchTickets = React.useCallback(async () => {
+    if (!eventId) return
+    setIsLoading(true)
+    try {
+      const [ticketsData, escaledTicketsData] = await Promise.all([getTickets(eventId), getEscaledTickets()])
+      setTickets(ticketsData)
+      setEscaledTickets(escaledTicketsData)
+    } catch (error) {
+      console.error("Error al obtener los tickets:", error)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [eventId])
+
+  React.useEffect(() => {
+    fetchTickets()
+  }, [fetchTickets])
+
+  const handleTicketCreated = () => {
+    fetchTickets()
+  }
+
+  const handleEdit = (ticket) => {
+    // TODO: Implementar edición
+    console.log("Editar ticket:", ticket)
+  }
+
+  const handleDelete = () => {
+    fetchTickets()
+  }
 
   return (
     <div className="flex h-full flex-col gap-4 p-4">
@@ -40,39 +78,64 @@ export default function TicketsPage() {
         </Button>
       </div>
 
-      <div className="rounded-lg border bg-card">
-        <div className="grid grid-cols-12 gap-4 border-b p-4 text-sm font-medium text-muted-foreground">
-          <div className="col-span-4">TÍTULO</div>
-          <div className="col-span-2">ESTADO</div>
-          <div className="col-span-2">MG+OJS</div>
-          <div className="col-span-2">8KAH54</div>
-          <div className="col-span-2"></div>
-        </div>
-        <div className="grid grid-cols-12 gap-4 p-4">
-          <div className="col-span-4">Entrada VIP</div>
-          <div className="col-span-2">
-            <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/20">
-              EN VENTA
-            </span>
+      {isLoading ? (
+        <div>Cargando tickets...</div>
+      ) : (
+        <div className="rounded-lg border bg-card">
+          <div className="grid grid-cols-12 gap-4 border-b p-4 text-sm font-medium text-muted-foreground">
+            <div className="col-span-4">TÍTULO</div>
+            <div className="col-span-2">ESTADO</div>
+            <div className="col-span-2">PRECIO</div>
+            <div className="col-span-2">CANTIDAD</div>
+            <div className="col-span-2"></div>
           </div>
-          <div className="col-span-2 font-medium text-emerald-600">$10.00</div>
-          <div className="col-span-2">0</div>
-          <div className="col-span-2"></div>
-        </div>
-        <div className="grid grid-cols-12 gap-4 border-t p-4">
-          <div className="col-span-4">Entrada gratis</div>
-          <div className="col-span-2">
-            <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/20">
-              EN VENTA
-            </span>
-          </div>
-          <div className="col-span-2 font-medium text-emerald-600">Gratis</div>
-          <div className="col-span-2">1</div>
-          <div className="col-span-2"></div>
-        </div>
-      </div>
+          {Array.isArray(tickets) && tickets.length > 0 ? (
+            tickets.map((ticket) => (
+              <div key={ticket.id} className="grid grid-cols-12 gap-4 border-t p-4">
+                <div className="col-span-4">{ticket.title}</div>
+                <div className="col-span-2">
+                  <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/20">
+                    {ticket.status ? ticket.status.toUpperCase() : "SIN ESTADO"}
+                  </span>
+                </div>
+                <div className="col-span-2 font-medium text-emerald-600">
+                  {ticket.price ? `$${ticket.price.toFixed(2)}` : "Gratis"}
+                </div>
+                <div className="col-span-2">{ticket.quantity || "Ilimitado"}</div>
+                <div className="col-span-2 flex justify-end">
+                  <TicketActions ticket={ticket} onEdit={handleEdit} onDelete={handleDelete} />
+                </div>
+              </div>
+            ))
+          ) : (
+            <p>No hay tickets disponibles</p>
+          )}
 
-      <CreateTicketDialog open={open} onOpenChange={setOpen} />
+          {Array.isArray(escaledTickets) && escaledTickets.length > 0 ? (
+            escaledTickets.map((ticket) => (
+              <div key={ticket.id} className="grid grid-cols-12 gap-4 border-t p-4">
+                <div className="col-span-4">{ticket.level_name} (Escalonado)</div>
+                <div className="col-span-2">
+                  <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-600/20">
+                    ESCALONADO
+                  </span>
+                </div>
+                <div className="col-span-2 font-medium text-blue-600">
+                  {ticket.price ? `$${ticket.price.toFixed(2)}` : "Gratis"}
+                </div>
+                <div className="col-span-2">{ticket.quantity || "Ilimitado"}</div>
+                <div className="col-span-2 flex justify-end">
+                  <TicketActions ticket={ticket} onEdit={handleEdit} onDelete={handleDelete} />
+                </div>
+              </div>
+            ))
+          ) : (
+            <p>No hay tickets escalonados disponibles</p>
+          )}
+        </div>
+      )}
+
+      <CreateTicketDialog open={open} onOpenChange={setOpen} onTicketCreated={handleTicketCreated} eventId={eventId} />
     </div>
   )
 }
