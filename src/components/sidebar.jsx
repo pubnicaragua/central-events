@@ -48,28 +48,28 @@ export function Sidebar() {
                                     Ajustes
                                 </Link>
                                 <Link
-                                    to="/tickets"
+                                    to="/manage/event/tickets"
                                     className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-300 hover:text-white"
                                 >
                                     <Ticket className="h-4 w-4" />
                                     Entradas
                                 </Link>
                                 <Link
-                                    to="/attendees"
+                                    to="/manage/event/attendees"
                                     className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-300 hover:text-white"
                                 >
                                     <Users className="h-4 w-4" />
                                     Asistentes
                                 </Link>
                                 <Link
-                                    to="/orders"
+                                    to="/manage/event/orders"
                                     className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-300 hover:text-white"
                                 >
                                     <ShoppingCart className="h-4 w-4" />
                                     Pedidos
                                 </Link>
                                 <Link
-                                    to="/questions"
+                                    to="/manage/event/questions"
                                     className="flex items-center gap-3 rounded-lg px-3 py-2 text-gray-300 hover:text-white"
                                 >
                                     <HelpCircle className="h-4 w-4" />

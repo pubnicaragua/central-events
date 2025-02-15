@@ -9,6 +9,10 @@ import Welcome from "./src/views/Welcome"
 import Events from "./src/views/Events"
 import GettingStarted from "./src/views/GettingStarted"
 import EventConfig from "./src/views/EventConfig"
+import TicketPage from "./src/views/TicketPage"
+import AttendePage from "./src/views/AttendeesPage"
+import OrdersPage from "./src/views/OrdersPage"
+import QuestionsPage from "./src/views/QuestionsPage"
 
 const router = createBrowserRouter([
   {
@@ -42,6 +46,22 @@ const router = createBrowserRouter([
       {
         path: ":eventId/settings",
         element: <EventConfig />,
+      },
+      {
+        path: "attendees",
+        element: <AttendePage />,
+      },
+      {
+        path: "tickets",
+        element: <TicketPage />,
+      },
+      {
+        path: "orders",
+        element: <OrdersPage />,
+      },
+      {
+        path: "questions",
+        element: <QuestionsPage />,
       },
     ],
   },
