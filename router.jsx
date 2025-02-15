@@ -11,10 +11,11 @@ import GettingStarted from "./src/views/GettingStarted"
 import EventConfig from "./src/views/EventConfig"
 import TicketPage from "./src/views/TicketPage"
 import AttendePage from "./src/views/AttendeesPage"
-import OrdersPage from "./src/views/OrdersPage"
+// import OrdersPage from "./src/views/OrdersPage"
 import QuestionsPage from "./src/views/QuestionsPage"
 import PromoCodes from "./src/views/PromoCodes"
 import DashboardPage from "./src/views/PanelPage"
+import Home from "./src/views/Home"
 
 const router = createBrowserRouter([
   {
@@ -50,6 +51,10 @@ const router = createBrowserRouter([
         element: <EventConfig />,
       },
       {
+        path: "getting-started",
+        element: <GettingStarted />,
+      },
+      {
         path: "attendees",
         element: <AttendePage />,
       },
@@ -59,7 +64,7 @@ const router = createBrowserRouter([
       },
       {
         path: "orders",
-        element: <OrdersPage />,
+        element: <Home />,
       },
       {
         path: "questions",
@@ -76,6 +81,26 @@ const router = createBrowserRouter([
       {
         path: "settings",
         element: <GettingStarted />,
+      },
+      {
+        path: "widget",
+        element: <Home />,
+      },
+      {
+        path: "registration-lists",
+        element: <Home />,
+      },
+      {
+        path: "capacity",
+        element: <Home />,
+      },
+      {
+        path: "page-designer",
+        element: <Home />,
+      },
+      {
+        path: "messages",
+        element: <Home />,
       },
     ],
   },
