@@ -59,7 +59,7 @@ const router = createBrowserRouter([
         element: <AttendePage />,
       },
       {
-        path: "tickets",
+        path: ":eventId/tickets",
         element: <TicketPage />,
       },
       {
