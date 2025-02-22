@@ -51,3 +51,26 @@ export async function getEscaledTickets() {
   return data
 }
 
+export async function getAvailableTicket(eventId) {
+  const { data, error } = await supabase
+    .from("tickets")
+    .select("id, price, quantity")
+    .eq("event_id", eventId)
+    .gt("quantity", 0)
+    .order("price")
+    .limit(1)
+    .single()
+
+  if (error) throw error
+  return data
+}
+
+export async function updateTicketQuantity(ticketId, quantity) {
+  const { error } = await supabase
+    .from("tickets")
+    .update({ quantity: quantity - 1 })
+    .eq("id", ticketId)
+
+  if (error) throw error
+}
+
