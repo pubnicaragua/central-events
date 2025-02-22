@@ -1,8 +1,9 @@
+//src\components\lib\actions\attendees.js
 import supabase from "../../../api/supabase"
 
 export async function createAttendee(attendeeData) {
   const { data, error } = await supabase
-    .from("assistants")
+    .from("attendants")
     .insert([
       {
         ticket_id: attendeeData.ticket_id,
@@ -20,7 +21,7 @@ export async function createAttendee(attendeeData) {
 }
 
 export async function getEventAttendees(eventId) {
-  const { data, error } = await supabase.from("assistants").select("*").eq("event_id", eventId)
+  const { data, error } = await supabase.from("attendants").select("*").eq("event_id", eventId)
 
   if (error) throw error
   return data
