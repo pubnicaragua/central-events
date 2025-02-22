@@ -26,12 +26,11 @@ export function Sidebar() {
                         <div className="mt-6">
                             <h4 className="px-2 py-2 text-xs font-semibold text-gray-400">Administrar</h4>
                             <div className="grid gap-1">
-                                <Link
-                                    to={`/manage/event/${eventId}/dashboard`}
+                                <Link to={`/manage/event/${eventId}/dashboard`}
                                     className={`flex items-center gap-3 rounded-lg px-3 py-2 ${location.pathname === `/manage/event/${eventId}/dashboard`
                                         ? 'bg-purple-600 text-white'
                                         : 'text-gray-300 hover:text-white'
-                                    }`}
+                                        }`}
                                 >
                                     <LayoutDashboard className="h-4 w-4" />
                                     Panel
