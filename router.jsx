@@ -10,7 +10,6 @@ import Events from "./src/views/Events"
 import GettingStarted from "./src/views/GettingStarted"
 import EventConfig from "./src/views/EventConfig"
 import TicketPage from "./src/views/TicketPage"
-//import AttendePage from "./src/views/AttendeesPage"
 import QuestionsPage from "./src/views/QuestionsPage"
 import PromoCodes from "./src/views/PromoCodes"
 import DashboardPage from "./src/views/dashboard/page"
@@ -18,8 +17,9 @@ import Home from "./src/views/Home"
 import EventDetail from "./src/views/EventDetail" // Nueva importación
 import Checkout from "./src/views/Checkout" // Nueva importación
 import OrderConfirmation from "./src/views/OrderConfirmation"
-//import Attendants from "./src/views/attendees/page"
-
+import AttendeesPage from "./src/views/Attendants"
+import OrdersPage from "./src/views/OrdersPage"
+import Messages from "./src/views/Messages"
 
 const router = createBrowserRouter([
   {
@@ -68,24 +68,12 @@ const router = createBrowserRouter([
         element: <EventConfig />,
       },
       {
-        path: "getting-started",
-        element: <GettingStarted />,
-      },
-      // {
-      //   path: "attendees",
-      //   element: <AttendePage />,
-      // },
-      // {
-      //   path: ":eventId/attendants",
-      //   element: <Attendants />,
-      // },
-      {
         path: ":eventId/tickets",
         element: <TicketPage />,
       },
       {
-        path: "orders",
-        element: <Home />,
+        path: ":eventId/orders",
+        element: <OrdersPage />,
       },
       {
         path: "questions",
@@ -98,10 +86,6 @@ const router = createBrowserRouter([
       {
         path: ":eventId/dashboard",
         element: <DashboardPage />,
-      },
-      {
-        path: "settings",
-        element: <GettingStarted />,
       },
       {
         path: "widget",
@@ -120,8 +104,12 @@ const router = createBrowserRouter([
         element: <Home />,
       },
       {
-        path: "messages",
-        element: <Home />,
+        path: ":eventId/messages",
+        element: <Messages />,
+      },
+      {
+        path: ":eventId/attendees",
+        element: <AttendeesPage />,
       },
     ],
   },
