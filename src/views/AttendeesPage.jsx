@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { AddAttendeeDialog } from "../components/attendees/add-attendee-dialog"
+import { AddAttendeeDialog } from "../components/attendees/attendee-details-dialog"
 
 // This is sample data
 const attendees = [

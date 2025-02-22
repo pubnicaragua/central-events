@@ -1,6 +1,6 @@
 "use client"
 
-import { useParams } from "react-router-dom"
+import { useLocation, useParams } from "react-router-dom"
 import * as React from "react"
 import { Search, Plus } from "lucide-react"
 
@@ -12,11 +12,18 @@ import { TicketActions } from "../components/tickets/ticket-actions"
 import { getTickets, getEscaledTickets } from "../utils/ticketActions"
 
 export default function TicketsPage() {
-  const [open, setOpen] = React.useState(false)
+  const location = useLocation();
+  const [open, setOpen] = React.useState(location.state?.openModal || false);
   const [tickets, setTickets] = React.useState([])
   const [escaledTickets, setEscaledTickets] = React.useState([])
   const [isLoading, setIsLoading] = React.useState(true)
   const { eventId } = useParams()
+
+  React.useEffect(() => {
+    if (location.state?.openModal) {
+      setOpen(true);
+    }
+  }, [location.state]);
 
   const fetchTickets = React.useCallback(async () => {
     if (!eventId) return

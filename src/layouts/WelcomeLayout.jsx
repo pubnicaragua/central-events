@@ -1,5 +1,5 @@
 import { Outlet } from "react-router-dom";
-import { WavesIcon as Wave } from "lucide-react";
+//import { WavesIcon as Wave } from "lucide-react";
 import { Toaster } from 'sonner'
 
 export default function WelcomeLayout() {
@@ -16,11 +16,7 @@ export default function WelcomeLayout() {
             </header>
 
             <main className="container mx-auto px-4 py-8">
-                <div className="mb-12">
-                    <h2 className="text-3xl font-bold text-purple-800">
-                        Bienvenido a Hola.Eventos, Benjamin <Wave className="inline-block h-8 w-8 text-yellow-400" />
-                    </h2>
-                </div>
+                
 
                 <Outlet />
             </main>

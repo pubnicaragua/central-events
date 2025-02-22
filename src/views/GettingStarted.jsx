@@ -36,9 +36,14 @@ export default function GettingStarted() {
           <p className="mt-2 text-sm text-gray-600">
             Crea entradas para tu evento, establece precios y gestiona la cantidad disponible.
           </p>
-          <Button className="mt-4" variant="secondary">
+          <Button
+            className="mt-4"
+            variant="secondary"
+            onClick={() => navigate(`/manage/event/${eventId}/tickets`, { state: { openModal: true } })}
+          >
             Agregar entradas
           </Button>
+
         </div>
 
         <div className="rounded-lg border bg-card p-6">
@@ -51,8 +56,8 @@ export default function GettingStarted() {
           <p className="mt-2 text-sm text-gray-600">
             Agregue detalles del evento y administre la configuración del evento.
           </p>
-          <Button className="mt-4" variant="secondary" 
-           onClick={() => navigate(`/manage/event/${eventId}/settings`, { state: { eventId, eventName } })}>
+          <Button className="mt-4" variant="secondary"
+            onClick={() => navigate(`/manage/event/${eventId}/settings`, { state: { eventId, eventName } })}>
             Configura tu evento
           </Button>
         </div>

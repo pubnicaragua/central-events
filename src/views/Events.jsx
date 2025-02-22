@@ -1,3 +1,4 @@
+//src/views/Events.jsx
 "use client"
 
 import PropTypes from "prop-types"
@@ -151,9 +152,11 @@ export default function EventsPage() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem>
-                        <Eye className="mr-2 h-4 w-4" />
-                        Ver página del evento
+                      <DropdownMenuItem asChild>
+                        <Link to={`/event/${event.id}`}>
+                          <Eye className="mr-2 h-4 w-4" />
+                          Ver página del evento
+                        </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem>
                         <Settings className="mr-2 h-4 w-4" />
