@@ -66,8 +66,8 @@ export function Sidebar() {
                                     Asistentes
                                 </Link>
                                 <Link
-                                    to="/manage/event/orders"
-                                    className={`flex items-center gap-3 rounded-lg px-3 py-2 ${location.pathname === '/manage/event/orders'
+                                    to={`/manage/event/${eventId}/orders`}
+                                    className={`flex items-center gap-3 rounded-lg px-3 py-2 ${location.pathname === `/manage/event/${eventId}orders`
                                         ? 'bg-purple-600 text-white'
                                         : 'text-gray-300 hover:text-white'
                                         }`}
@@ -96,8 +96,8 @@ export function Sidebar() {
                                     Códigos promocionales
                                 </Link>
                                 <Link
-                                    to="/manage/event/messages"
-                                    className={`flex items-center gap-3 rounded-lg px-3 py-2 ${location.pathname === '/manage/event/messages'
+                                    to={`/manage/event/${eventId}/messages`}
+                                    className={`flex items-center gap-3 rounded-lg px-3 py-2 ${location.pathname === `/manage/event/${eventId}/messages`
                                         ? 'bg-purple-600 text-white'
                                         : 'text-gray-300 hover:text-white'
                                         }`}
