@@ -10,12 +10,16 @@ import Events from "./src/views/Events"
 import GettingStarted from "./src/views/GettingStarted"
 import EventConfig from "./src/views/EventConfig"
 import TicketPage from "./src/views/TicketPage"
-import AttendePage from "./src/views/AttendeesPage"
-// import OrdersPage from "./src/views/OrdersPage"
+//import AttendePage from "./src/views/AttendeesPage"
 import QuestionsPage from "./src/views/QuestionsPage"
 import PromoCodes from "./src/views/PromoCodes"
-import DashboardPage from "./src/views/PanelPage"
+import DashboardPage from "./src/views/dashboard/page"
 import Home from "./src/views/Home"
+import EventDetail from "./src/views/EventDetail" // Nueva importación
+import Checkout from "./src/views/Checkout" // Nueva importación
+import OrderConfirmation from "./src/views/OrderConfirmation"
+//import Attendants from "./src/views/attendees/page"
+
 
 const router = createBrowserRouter([
   {
@@ -25,6 +29,19 @@ const router = createBrowserRouter([
       {
         index: true,
         element: <Events />,
+      },
+      // Añadimos las nuevas rutas aquí para que usen WelcomeLayout
+      {
+        path: "event/:eventId",
+        element: <EventDetail />,
+      },
+      {
+        path: "checkout/:eventId/:ticketId",
+        element: <Checkout />,
+      },
+      {
+        path: "order-confirmation/:orderId",
+        element: <OrderConfirmation />,
       },
     ],
   },
@@ -54,10 +71,14 @@ const router = createBrowserRouter([
         path: "getting-started",
         element: <GettingStarted />,
       },
-      {
-        path: "attendees",
-        element: <AttendePage />,
-      },
+      // {
+      //   path: "attendees",
+      //   element: <AttendePage />,
+      // },
+      // {
+      //   path: ":eventId/attendants",
+      //   element: <Attendants />,
+      // },
       {
         path: ":eventId/tickets",
         element: <TicketPage />,
@@ -75,7 +96,7 @@ const router = createBrowserRouter([
         element: <PromoCodes />,
       },
       {
-        path: "dashboard",
+        path: ":eventId/dashboard",
         element: <DashboardPage />,
       },
       {
