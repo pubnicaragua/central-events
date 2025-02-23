@@ -4,7 +4,7 @@ import { useState } from "react"
 import PropTypes from "prop-types"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
+import { z } from "zod"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Form } from "@/components/ui/form"
 import { Button } from "@/components/ui/button"
@@ -17,7 +17,14 @@ const formSchema = z.object({
   name: z.string().min(1, "El nombre es requerido"),
   description: z.string().min(1, "La descripción es requerida"),
   type: z.enum(["paid", "free", "donation", "tiered"]),
-  price: z.string().optional(),
+  price: z
+    .string()
+    .optional()
+    .refine((val) => {
+      if (val === undefined) return true
+      const num = Number.parseFloat(val)
+      return !isNaN(num) && num >= 0
+    }, "El precio debe ser un número positivo"),
   quantity: z.string(),
   minQuantity: z.string(),
   maxQuantity: z.string(),
@@ -28,7 +35,15 @@ const formSchema = z.object({
   hideWhenSoldOut: z.boolean(),
   showQuantity: z.boolean(),
   hideFromCustomers: z.boolean(),
-  taxes: z.string().optional(),
+  priceLevels: z
+    .array(
+      z.object({
+        price: z.string().min(1, "El precio es requerido"),
+        tag: z.string().min(1, "La etiqueta es requerida"),
+        quantity: z.string(),
+      }),
+    )
+    .optional(),
 })
 
 export function CreateTicketDialog({ open, onOpenChange, onTicketCreated, eventId }) {
@@ -51,35 +66,49 @@ export function CreateTicketDialog({ open, onOpenChange, onTicketCreated, eventI
   async function onSubmit(values) {
     setIsSubmitting(true)
     try {
+      const ticketData = {
+        title: values.name,
+        description: values.description,
+        status: "active",
+        bill_type: values.type,
+        quantity: values.quantity === "unlimited" ? null : Number.parseInt(values.quantity),
+        price: values.type === "free" ? 0 : Number.parseFloat(values.price || "0"),
+        min_per_order: Number.parseInt(values.minQuantity),
+        max_per_order: Number.parseInt(values.maxQuantity),
+        begin_date: new Date(values.startDate).toISOString(),
+        end_date: new Date(values.endDate).toISOString(),
+        hide_before_sale: values.hideBeforeStart,
+        hide_after_sale: values.hideAfterEnd,
+        hide_if_spent: values.hideWhenSoldOut,
+        show_quantity: values.showQuantity,
+        hide_to_clients: values.hideFromCustomers,
+        event_id: eventId,
+      }
+
+      console.log("Datos del ticket a crear:", ticketData) // Debug
+
       if (values.type === "tiered") {
-        await createEscaledTicket({
-          level_name: values.name,
-          price: Number.parseFloat(values.price || "0"),
-          quantity: values.quantity === "unlimited" ? null : Number.parseInt(values.quantity),
-          begin_date: new Date(values.startDate),
-          end_date: new Date(values.endDate),
-          hide_to_user: values.hideFromCustomers,
-          event_id: eventId, // Asegúrate de incluir el event_id aquí también
-        })
+        // First create the main ticket
+        const mainTicket = await createTicket(ticketData)
+
+        // Then create the price levels
+        if (values.priceLevels && values.priceLevels.length > 0) {
+          await Promise.all(
+            values.priceLevels.map((level) =>
+              createEscaledTicket({
+                level_name: level.tag,
+                price: Number.parseFloat(level.price),
+                quantity: level.quantity === "unlimited" ? null : Number.parseInt(level.quantity),
+                begin_date: new Date(values.startDate).toISOString(),
+                end_date: new Date(values.endDate).toISOString(),
+                hide_to_user: values.hideFromCustomers,
+                ticket_id: mainTicket.id,
+              }),
+            ),
+          )
+        }
       } else {
-        await createTicket({
-          title: values.name,
-          description: values.description,
-          status: "active",
-          bill_type: values.type,
-          quantity: values.quantity === "unlimited" ? null : Number.parseInt(values.quantity),
-          price: Number.parseFloat(values.price || "0"),
-          min_per_order: Number.parseInt(values.minQuantity),
-          max_per_order: Number.parseInt(values.maxQuantity),
-          begin_date: new Date(values.startDate),
-          end_date: new Date(values.endDate),
-          hide_before_sale: values.hideBeforeStart,
-          hide_after_sale: values.hideAfterEnd,
-          hide_if_spent: values.hideWhenSoldOut,
-          show_quantity: values.showQuantity,
-          hide_to_clients: values.hideFromCustomers,
-          event_id: eventId,
-        })
+        await createTicket(ticketData)
       }
       onTicketCreated()
       onOpenChange(false)
@@ -104,7 +133,7 @@ export function CreateTicketDialog({ open, onOpenChange, onTicketCreated, eventI
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <TicketTypeSelector value={form.watch("type")} onChange={(value) => form.setValue("type", value)} />
-            <TicketForm control={form.control} />
+            <TicketForm control={form.control} watch={form.watch} />
             <DialogFooter>
               <Button type="submit" className="w-full bg-purple-600 hover:bg-purple-700" disabled={isSubmitting}>
                 {isSubmitting ? "Creando..." : "Crear Ticket"}

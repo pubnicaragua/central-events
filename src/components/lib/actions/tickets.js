@@ -1,3 +1,4 @@
+//src/components/lib/actions/tickets.js
 import supabase from "../../../api/supabase"
 
 export async function createTicket(ticketData) {
@@ -50,8 +51,12 @@ export async function createEscaledTicket(escaledTicketData) {
   return data[0]
 }
 
-export async function getEscaledTickets() {
-  const { data, error } = await supabase.from("escaled_ticket").select("*").order("created_at", { ascending: false })
+export async function getEscaledTickets(ticketId) {
+  const { data, error } = await supabase
+    .from("escaled_ticket")
+    .select("*")
+    .eq("ticket_id", ticketId)
+    .order("created_at", { ascending: false })
 
   if (error) throw error
   return data
