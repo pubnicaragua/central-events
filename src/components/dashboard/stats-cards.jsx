@@ -1,8 +1,6 @@
-/* eslint-disable react/prop-types */
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Eye, Ticket, DollarSign, FileText } from "lucide-react"
+import { Ticket, DollarSign, FileText, Users } from "lucide-react"
 
-// eslint-disable-next-line react/prop-types
 export function StatsCards({ stats }) {
   return (
     <>
@@ -22,17 +20,22 @@ export function StatsCards({ stats }) {
           <DollarSign className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">${stats.grossSales.toFixed(2)}</div>
+          <div className="text-2xl font-bold">
+            {new Intl.NumberFormat("es-ES", {
+              style: "currency",
+              currency: "EUR",
+            }).format(stats.grossSales)}
+          </div>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Vistas de página</CardTitle>
-          <Eye className="h-4 w-4 text-muted-foreground" />
+          <CardTitle className="text-sm font-medium">Asistentes</CardTitle>
+          <Users className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{stats.pageViews}</div>
+          <div className="text-2xl font-bold">{stats.attendeeCount}</div>
         </CardContent>
       </Card>
 

@@ -1,80 +1,157 @@
-import supabase from "../../../api/supabase";
+import supabase from "../../../api/supabase"
 
-export async function getTicketsSold(eventId) {
-  if (!eventId) return 0;
-  
-  const { data, error } = await supabase
-    .from("tickets")
-    .select("quantity")
-    .eq("event_id", eventId);
+export async function getAttendeeCount(eventId) {
+  if (!eventId) return 0
 
-  if (error) {
-    console.error("Error obteniendo entradas vendidas:", error);
-    return data;
+  // First get all tickets for this event
+  const { data: tickets, error: ticketsError } = await supabase.from("tickets").select("id").eq("event_id", eventId)
+
+  if (ticketsError) {
+    console.error("Error obteniendo tickets:", ticketsError)
+    return 0
   }
 
-  // Sumar la cantidad de entradas vendidas para el evento
-  const totalTicketsSold = data.reduce((acc, ticket) => acc + ticket.quantity, 0);
-  return totalTicketsSold;
+  if (!tickets || tickets.length === 0) {
+    return 0
+  }
+
+  // Get attendants count for these tickets
+  const ticketIds = tickets.map((ticket) => ticket.id)
+  const { data: attendants, error: attendantsError } = await supabase
+    .from("attendants")
+    .select("id")
+    .in("ticket_id", ticketIds)
+
+  if (attendantsError) {
+    console.error("Error obteniendo asistentes:", attendantsError)
+    return 0
+  }
+
+  return attendants?.length || 0
 }
 
-export async function getGrossSales(eventId) {
-  if (!eventId) return 0;
+// Alternative approach using a single query with joins
+export async function getAttendeeCountWithJoin(eventId) {
+  if (!eventId) return 0
 
   const { data, error } = await supabase
-    .from("orders")
-    .select("total")
-    .eq("event_id", eventId);
+    .from("attendants")
+    .select(`
+      id,
+      tickets!inner(
+        event_id
+      )
+    `)
+    .eq("tickets.event_id", eventId)
 
   if (error) {
-    console.error("Error obteniendo ventas brutas:", error);
-    return data;
+    console.error("Error obteniendo asistentes:", error)
+    return 0
   }
 
-  // Contar el número total de órdenes creadas para el evento
-  return data.length;
+  return data?.length || 0
 }
 
 export async function getDashboardStats(eventId) {
-  // Mock data for demonstration purposes
-  return {
-    ticketsSold: Math.floor(Math.random() * 100),
-    grossSales: Math.floor(Math.random() * 1000),
-    pageViews: Math.floor(Math.random() * 500),
-    ordersCreated: Math.floor(Math.random() * 75),
+  try {
+    // Get tickets sold and orders count
+    const { data: orders, error: ordersError } = await supabase
+      .from("orders")
+      .select("id, quantity, total")
+      .eq("event_id", eventId)
+
+    if (ordersError) throw ordersError
+
+    // Get attendee count
+    const attendeeCount = await getAttendeeCount(eventId)
+
+    const ticketsSold = orders.reduce((sum, order) => sum + (order.quantity || 0), 0)
+    const grossSales = orders.reduce((sum, order) => sum + (order.total || 0), 0)
+
+    return {
+      ticketsSold,
+      grossSales,
+      attendeeCount,
+      ordersCreated: orders.length,
+    }
+  } catch (error) {
+    console.error("Error fetching dashboard stats:", error)
+    throw error
   }
 }
 
 export async function getTicketSalesData(eventId) {
-  // Mock data for demonstration purposes
-  const data = []
-  for (let i = 0; i < 7; i++) {
-    const date = new Date()
-    date.setDate(date.getDate() - i)
-    const dateString = date.toLocaleDateString()
-    data.push({
-      date: dateString,
-      ordersCreated: Math.floor(Math.random() * 20),
-      ticketsSold: Math.floor(Math.random() * 30),
-    })
+  try {
+    const { data: orders, error } = await supabase
+      .from("orders")
+      .select("created_at, quantity")
+      .eq("event_id", eventId)
+      .order("created_at")
+
+    if (error) throw error
+
+    // Group by date
+    const dailyData = orders.reduce((acc, curr) => {
+      const date = new Date(curr.created_at).toISOString().split("T")[0]
+      if (!acc[date]) {
+        acc[date] = {
+          ordersCreated: 0,
+          ticketsSold: 0,
+        }
+      }
+      acc[date].ordersCreated++
+      acc[date].ticketsSold += curr.quantity || 0
+      return acc
+    }, {})
+
+    return Object.entries(dailyData)
+      .map(([date, data]) => ({
+        date,
+        ...data,
+      }))
+      .sort((a, b) => new Date(a.date) - new Date(b.date))
+  } catch (error) {
+    console.error("Error fetching ticket sales data:", error)
+    throw error
   }
-  return data.reverse()
 }
 
 export async function getRevenueData(eventId) {
-  // Mock data for demonstration purposes
-  const data = []
-  for (let i = 0; i < 7; i++) {
-    const date = new Date()
-    date.setDate(date.getDate() - i)
-    const dateString = date.toLocaleDateString()
-    data.push({
-      date: dateString,
-      totalFees: Math.floor(Math.random() * 50),
-      grossSales: Math.floor(Math.random() * 200),
-      totalTaxes: Math.floor(Math.random() * 30),
-    })
+  try {
+    const { data: orders, error } = await supabase
+      .from("orders")
+      .select("created_at, total")
+      .eq("event_id", eventId)
+      .order("created_at")
+
+    if (error) throw error
+
+    // Group by date
+    const dailyData = orders.reduce((acc, curr) => {
+      const date = new Date(curr.created_at).toISOString().split("T")[0]
+      if (!acc[date]) {
+        acc[date] = {
+          totalFees: 0,
+          grossSales: 0,
+          totalTaxes: 0,
+        }
+      }
+      const total = curr.total || 0
+      acc[date].grossSales += total
+      acc[date].totalFees += total * 0.1 // 10% fees
+      acc[date].totalTaxes += total * 0.16 // 16% taxes
+      return acc
+    }, {})
+
+    return Object.entries(dailyData)
+      .map(([date, data]) => ({
+        date,
+        ...data,
+      }))
+      .sort((a, b) => new Date(a.date) - new Date(b.date))
+  } catch (error) {
+    console.error("Error fetching revenue data:", error)
+    throw error
   }
-  return data.reverse()
 }
 
