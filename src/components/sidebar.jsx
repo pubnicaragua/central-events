@@ -106,8 +106,8 @@ export function Sidebar() {
                                     Mensajes
                                 </Link>
                                 <Link
-                                    to="/manage/event/capacity"
-                                    className={`flex items-center gap-3 rounded-lg px-3 py-2 ${location.pathname === '/manage/event/capacity'
+                                    to={`/manage/event/${eventId}/capacity`}
+                                    className={`flex items-center gap-3 rounded-lg px-3 py-2 ${location.pathname === `/manage/event/${eventId}/capacity`
                                         ? 'bg-purple-600 text-white'
                                         : 'text-gray-300 hover:text-white'
                                         }`}

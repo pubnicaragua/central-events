@@ -12,10 +12,13 @@ const formSchema = z.object({
   name: z.string().min(1, "El nombre es requerido"),
   second_name: z.string().min(1, "El apellido es requerido"),
   email: z.string().email("Email inválido"),
-  quantity: z.number().min(1, "La cantidad debe ser mayor a 0"),
+  quantity: z
+    .number()
+    .min(1, "La cantidad debe ser mayor a 0")
+    .refine((val) => val > 0, "La cantidad debe ser mayor a 0"),
 })
 
-export function OrderForm({ onSubmit, isLoading }) {
+export function OrderForm({ onSubmit, isLoading, maxQuantity }) {
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -81,10 +84,12 @@ export function OrderForm({ onSubmit, isLoading }) {
                 <Input
                   type="number"
                   min="1"
+                  max={maxQuantity || undefined}
                   {...field}
                   onChange={(e) => field.onChange(Number.parseInt(e.target.value))}
                 />
               </FormControl>
+              {maxQuantity && <p className="text-sm text-muted-foreground">Máximo {maxQuantity} tickets disponibles</p>}
               <FormMessage />
             </FormItem>
           )}
@@ -101,5 +106,6 @@ export function OrderForm({ onSubmit, isLoading }) {
 OrderForm.propTypes = {
   onSubmit: PropTypes.func.isRequired,
   isLoading: PropTypes.bool,
+  maxQuantity: PropTypes.number,
 }
 

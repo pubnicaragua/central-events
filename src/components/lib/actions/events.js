@@ -14,3 +14,10 @@ export async function getEventTickets(eventId) {
   return data
 }
 
+export async function getEventDetails(eventId) {
+  const { data, error } = await supabase.from("events").select("*").eq("id", eventId).single()
+
+  if (error) throw error
+  return data
+}
+

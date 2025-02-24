@@ -20,6 +20,10 @@ import OrderConfirmation from "./src/views/OrderConfirmation"
 import AttendeesPage from "./src/views/Attendants"
 import OrdersPage from "./src/views/OrdersPage"
 import Messages from "./src/views/Messages"
+import CapacityPage from "./src/views/CapacityPage"
+import RegistrationListsPage from "./src/views/RegistrationListsPage"
+import HomepageDesigner from "./src/views/HomepageDesigner"
+import GuestPage from "./src/views/GuestPage"
 
 const router = createBrowserRouter([
   {
@@ -76,6 +80,10 @@ const router = createBrowserRouter([
         element: <OrdersPage />,
       },
       {
+        path: ":eventId/guests",
+        element: <GuestPage />,
+      },
+      {
         path: "questions",
         element: <QuestionsPage />,
       },
@@ -92,16 +100,20 @@ const router = createBrowserRouter([
         element: <Home />,
       },
       {
-        path: "registration-lists",
-        element: <Home />,
+        path: ":eventId/registration-lists",
+        element: <RegistrationListsPage />,
       },
       {
-        path: "capacity",
-        element: <Home />,
+        path: ":eventId/capacity",
+        element: <CapacityPage />,
       },
       {
-        path: "page-designer",
-        element: <Home />,
+        path: ":eventId/check-in",
+        element: <CapacityPage />,
+      },
+      {
+        path: ":eventId/page-designer",
+        element: <HomepageDesigner />,
       },
       {
         path: ":eventId/messages",

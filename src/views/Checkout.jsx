@@ -6,18 +6,18 @@ import { ArrowLeft } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { OrderForm } from "@/components/checkout/order-form"
 import { AttendeeForm } from "@/components/checkout/attendee-form"
-import { createOrder } from "../components/lib/actions/orders"
-import { createAttendee } from "../components/lib/actions/attendees"
-import { getTicket } from "../components/lib/actions/tickets"
+import { createOrder } from "@actions/orders"
+import { createAttendee } from "@actions/attendees"
+import { getTicket, updateTicketQuantity } from "@actions/tickets"
 
 export default function CheckoutPage() {
   const { eventId, ticketId } = useParams()
   const [loading, setLoading] = useState(false)
   const [loadingTicket, setLoadingTicket] = useState(true)
-  const [orderData, setOrderData] = useState(null)
+  const [orderFormData, setOrderFormData] = useState(null)
   const [ticketData, setTicketData] = useState(null)
   const [error, setError] = useState(null)
-  const [step, setStep] = useState("order") // Nuevo estado para controlar el paso actual
+  const [step, setStep] = useState("order")
 
   useEffect(() => {
     async function fetchTicket() {
@@ -26,6 +26,10 @@ export default function CheckoutPage() {
         const ticket = await getTicket(ticketId)
         if (!ticket) {
           setError("Ticket no encontrado")
+          return
+        }
+        if (ticket.quantity !== null && ticket.quantity <= 0) {
+          setError("No hay tickets disponibles")
           return
         }
         setTicketData(ticket)
@@ -42,44 +46,51 @@ export default function CheckoutPage() {
     }
   }, [ticketId])
 
-  const handleOrderSubmit = async (data) => {
+  const handleOrderFormSubmit = async (data) => {
     if (!ticketData) return
 
-    setLoading(true)
-    try {
-      const total = data.quantity * (ticketData.price || 0)
-
-      const order = await createOrder({
-        ...data,
-        event_id: eventId,
-        ticket_id: ticketId,
-        total: total,
-      })
-      setOrderData(order)
-      setStep("attendees") // Cambiamos al paso de asistentes después de crear la orden
-    } catch (error) {
-      console.error("Error creating order:", error)
-      setError("Error al crear la orden")
-    } finally {
-      setLoading(false)
+    // Verificar disponibilidad
+    if (ticketData.quantity !== null && data.quantity > ticketData.quantity) {
+      setError(`Solo hay ${ticketData.quantity} tickets disponibles`)
+      return
     }
+
+    const total = data.quantity * (ticketData.price || 0)
+    setOrderFormData({ ...data, total })
+    setStep("attendees")
   }
 
   const handleAttendeeSubmit = async (attendees) => {
+    if (!orderFormData || !ticketData) return
+
     setLoading(true)
     try {
-      const promises = attendees.map((attendee) =>
+      // Crear la orden
+      const order = await createOrder({
+        ...orderFormData,
+        event_id: eventId,
+        ticket_id: ticketId,
+      })
+
+      // Crear los asistentes
+      const attendeePromises = attendees.map((attendee) =>
         createAttendee({
           ...attendee,
-          order_id: orderData.id,
+          order_id: order.id,
           ticket_id: ticketId,
         }),
       )
-      await Promise.all(promises)
-      window.location.href = `/order-confirmation/${orderData.id}`
+      await Promise.all(attendeePromises)
+
+      // Actualizar la cantidad de tickets disponibles
+      if (ticketData.quantity !== null) {
+        await updateTicketQuantity(ticketId, ticketData.quantity - orderFormData.quantity)
+      }
+
+      window.location.href = `/order-confirmation/${order.id}`
     } catch (error) {
-      console.error("Error creating attendees:", error)
-      setError("Error al crear los asistentes")
+      console.error("Error completing order:", error)
+      setError("Error al completar la orden")
     } finally {
       setLoading(false)
     }
@@ -140,9 +151,13 @@ export default function CheckoutPage() {
               </CardHeader>
               <CardContent>
                 {step === "order" ? (
-                  <OrderForm onSubmit={handleOrderSubmit} isLoading={loading} />
+                  <OrderForm onSubmit={handleOrderFormSubmit} isLoading={loading} maxQuantity={ticketData?.quantity} />
                 ) : (
-                  <AttendeeForm onSubmit={handleAttendeeSubmit} isLoading={loading} orderData={orderData} />
+                  <AttendeeForm
+                    onSubmit={handleAttendeeSubmit}
+                    isLoading={loading}
+                    quantity={orderFormData?.quantity || 1}
+                  />
                 )}
               </CardContent>
             </Card>
@@ -160,19 +175,24 @@ export default function CheckoutPage() {
                       <div>
                         <p className="font-medium">{ticketData.title}</p>
                         <p className="text-sm text-gray-500">
-                          {orderData
-                            ? `${orderData.quantity} x $${ticketData.price?.toFixed(2) || "0.00"}`
+                          {orderFormData
+                            ? `${orderFormData.quantity} x $${ticketData.price?.toFixed(2) || "0.00"}`
                             : `$${ticketData.price?.toFixed(2) || "0.00"}`}
                         </p>
+                        {ticketData.quantity !== null && (
+                          <p className="text-sm text-gray-500">{ticketData.quantity} disponibles</p>
+                        )}
                       </div>
-                      {orderData && (
-                        <p className="font-medium">${(orderData.quantity * (ticketData.price || 0) || 0).toFixed(2)}</p>
+                      {orderFormData && (
+                        <p className="font-medium">${(orderFormData.quantity * (ticketData.price || 0)).toFixed(2)}</p>
                       )}
                     </div>
                     <div className="border-t pt-4">
                       <div className="flex justify-between font-medium">
                         <span>Total</span>
-                        <span>${orderData ? orderData.total.toFixed(2) : (ticketData.price || 0).toFixed(2)}</span>
+                        <span>
+                          ${orderFormData ? orderFormData.total.toFixed(2) : (ticketData.price || 0).toFixed(2)}
+                        </span>
                       </div>
                     </div>
                   </div>
