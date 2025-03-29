@@ -4,7 +4,7 @@ import { RouterProvider } from "react-router-dom"
 import { NotificationProvider } from "./context/NotificationContext"
 import { AuthProvider } from "./context/AuthContext"
 import "./index.css"
-import router from "../Router"
+import router from "../router"
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>

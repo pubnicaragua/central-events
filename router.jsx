@@ -119,10 +119,6 @@ const router = createBrowserRouter([
         element: <CapacityPage />,
       },
       {
-        path: ":eventId/check-in",
-        element: <CapacityPage />,
-      },
-      {
         path: ":eventId/page-designer",
         element: <HomepageDesigner />,
       },
