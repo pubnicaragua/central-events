@@ -1,19 +1,20 @@
 import { Outlet } from "react-router-dom"
 
-export default function Layout() {
+function AuthLayout() {
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-      <main className="max-w-4xl w-full bg-white rounded-lg shadow-md overflow-hidden">
-        <div className="flex flex-col items-center">
-          <div className="md:w-1/2 p-6 flex items-center justify-center">
-            <img src="/logo.jpg" alt="Logo de Central Events" className="w-40 h-auto" />
-          </div>
-          <div className="md:w-1/2">
-            <Outlet />
-          </div>
-        </div>
-      </main>
+    <div className="grid grid-cols-1 md:grid-cols-2 min-h-screen">
+      {/* Columna izquierda con fondo azul oscuro */}
+      <div className="hidden sm:flex bg-gray-800 items-center justify-center">
+        <img src="/logo.png" alt="" />
+      </div>
+
+      {/* Columna derecha con fondo gris claro */}
+      <div className="bg-slate-100 flex  items-center justify-center p-8">
+        <Outlet />
+      </div>
     </div>
   )
 }
+
+export default AuthLayout
 

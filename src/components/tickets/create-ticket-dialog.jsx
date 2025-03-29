@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button"
 import { X } from "lucide-react"
 import { TicketTypeSelector } from "./ticket-type-selector"
 import { TicketForm } from "./ticket-form"
-import { createTicket, createEscaledTicket } from "../lib/actions/tickets"
+import { createTicket, createEscaledTicket } from "@actions/tickets"
 
 const formSchema = z.object({
   name: z.string().min(1, "El nombre es requerido"),
@@ -152,4 +152,3 @@ CreateTicketDialog.propTypes = {
   onTicketCreated: PropTypes.func.isRequired,
   eventId: PropTypes.string.isRequired,
 }
-

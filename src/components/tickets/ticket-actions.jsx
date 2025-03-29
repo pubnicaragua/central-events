@@ -15,7 +15,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { useState } from "react"
-import { deleteTicket } from "../../utils/ticketActions"
+import { deleteTicket } from "@actions/tickets"
 
 export function TicketActions({ ticket, onEdit, onDelete }) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
@@ -87,4 +87,3 @@ TicketActions.propTypes = {
   onEdit: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
 }
-

@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { StatsCard } from "../components/dashboard/StatsCard"
 import { TicketSalesChart } from "../components/dashboard/TicketsSalesChart"
 import { RevenueChart } from "../components/dashboard/RevenueChart"
-import { getDashboardStats, getTicketSalesData, getRevenueData } from "../utils/dashboardUtils"
+import { getDashboardStats, getTicketSalesData, getRevenueData } from "@actions/dashboard"
 
 export function DashboardPage() {
   const { eventId } = useParams()

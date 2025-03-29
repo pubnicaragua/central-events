@@ -298,4 +298,3 @@ TicketForm.propTypes = {
   control: PropTypes.object.isRequired,
   watch: PropTypes.func.isRequired,
 }
-

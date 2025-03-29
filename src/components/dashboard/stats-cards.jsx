@@ -23,7 +23,7 @@ export function StatsCards({ stats }) {
           <div className="text-2xl font-bold">
             {new Intl.NumberFormat("es-ES", {
               style: "currency",
-              currency: "EUR",
+              currency: "USD",
             }).format(stats.grossSales)}
           </div>
         </CardContent>

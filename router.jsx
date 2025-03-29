@@ -2,6 +2,7 @@ import { createBrowserRouter } from "react-router-dom"
 import DashboardLayout from "./src/layouts/DashboardLayout"
 import WelcomeLayout from "./src/layouts/WelcomeLayout"
 import AuthLayout from "./src/layouts/AuthLayout"
+import AdminLayout from "./src/layouts/AdminLayout"
 
 import Login from "./src/views/Login"
 import Register from "./src/views/Register"
@@ -24,15 +25,20 @@ import CapacityPage from "./src/views/CapacityPage"
 import RegistrationListsPage from "./src/views/RegistrationListsPage"
 import HomepageDesigner from "./src/views/HomepageDesigner"
 import GuestPage from "./src/views/GuestPage"
+import ProfilePage from "./src/views/ProfilePage"
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <WelcomeLayout />,
+    element: <AdminLayout />,
     children: [
       {
         index: true,
         element: <Events />,
+      },
+      {
+        path: 'admin/profile',
+        element: <ProfilePage />,
       },
       // Añadimos las nuevas rutas aquí para que usen WelcomeLayout
       {

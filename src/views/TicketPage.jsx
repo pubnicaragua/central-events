@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { CreateTicketDialog } from "../components/tickets/create-ticket-dialog"
 import { TicketActions } from "../components/tickets/ticket-actions"
-import { getTickets, getEscaledTickets } from "../utils/ticketActions"
+import { getTickets, getEscaledTickets } from "@actions/tickets"
 
 export default function TicketsPage() {
   const location = useLocation();
@@ -146,4 +146,3 @@ export default function TicketsPage() {
     </div>
   )
 }
-
