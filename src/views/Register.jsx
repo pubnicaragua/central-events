@@ -156,7 +156,7 @@ export default function Register() {
             </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
-            <Button type="submit" className="w-full bg-purple-600 hover:bg-purple-700">
+            <Button type="submit" className="w-full bg-gray-700 hover:bg-gray-800">
               Registro
             </Button>
             <p className="text-xs text-center text-gray-600">
