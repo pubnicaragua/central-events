@@ -47,7 +47,7 @@ export function EventFilters({ searchTerm, setSearchTerm, sortBy, setSortBy, sta
             onClick={() => handleStatusChange(statusOption)}
             className={`px-4 py-2 ${
               status === statusOption
-                ? "border-b-2 border-purple-600 text-purple-600"
+                ? "border-b-2 border-indigo-600 text-indigo-600"
                 : "text-gray-600 hover:text-gray-800"
             }`}
           >

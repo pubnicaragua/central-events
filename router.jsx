@@ -26,6 +26,7 @@ import RegistrationListsPage from "./src/views/RegistrationListsPage"
 import HomepageDesigner from "./src/views/HomepageDesigner"
 import GuestPage from "./src/views/GuestPage"
 import ProfilePage from "./src/views/ProfilePage"
+import Amenidades from "./src/views/Amenities"
 
 const router = createBrowserRouter([
   {
@@ -90,11 +91,11 @@ const router = createBrowserRouter([
         element: <GuestPage />,
       },
       {
-        path: "questions",
+        path: ":eventId/questions",
         element: <QuestionsPage />,
       },
       {
-        path: "promo-codes",
+        path: ":eventId/promo-codes",
         element: <PromoCodes />,
       },
       {
@@ -104,6 +105,10 @@ const router = createBrowserRouter([
       {
         path: "widget",
         element: <Home />,
+      },
+      {
+        path: ":eventId/amenities",
+        element: <Amenidades />,
       },
       {
         path: ":eventId/registration-lists",

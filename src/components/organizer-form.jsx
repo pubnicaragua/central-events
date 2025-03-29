@@ -122,7 +122,7 @@ export function OrganizerForm({ onSubmit }) {
         </div>
       </div>
 
-      <Button type="submit" className="w-full bg-green-500 hover:bg-green-600">
+      <Button type="submit" className="w-full bg-black hover:bg-black">
         Crear organizador
       </Button>
     </form>

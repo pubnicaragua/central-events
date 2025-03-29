@@ -66,7 +66,7 @@ export default function EventsPage() {
     <div className="min-h-screen bg-gray-50">
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h2 className="text-3xl font-bold text-purple-800">Próximos eventos</h2>
+          <h2 className="text-3xl font-bold text-gray-800">Próximos eventos</h2>
         </div>
 
         <div className="mb-6 flex items-center justify-between">
@@ -82,7 +82,7 @@ export default function EventsPage() {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button className="bg-green-500 hover:bg-green-600 flex items-center">
+              <Button className="bg-black hover:bg-black flex items-center">
                 <Plus className="h-4 w-4 mr-2" />
                 Crear nuevo
               </Button>
@@ -123,10 +123,10 @@ export default function EventsPage() {
               const startDate = formatDate(event.start_date)
               return (
                 <div key={event.id} className="flex items-start gap-4 rounded-lg border border-gray-200 bg-white p-4">
-                  <div className="flex h-20 w-20 flex-col items-center justify-center rounded-lg bg-purple-100 text-center">
-                    <span className="text-2xl font-bold text-purple-800">{startDate.day}</span>
-                    <span className="text-sm font-medium text-purple-800">{startDate.month}</span>
-                    <span className="text-xs text-purple-600">{startDate.time}</span>
+                  <div className="flex h-20 w-20 flex-col items-center justify-center rounded-lg bg-gray-100 text-center">
+                    <span className="text-2xl font-bold text-gray-800">{startDate.day}</span>
+                    <span className="text-sm font-medium text-gray-800">{startDate.month}</span>
+                    <span className="text-xs text-gray-600">{startDate.time}</span>
                   </div>
                   <div className="flex-1">
                     <div className="mb-1">
@@ -183,7 +183,7 @@ export default function EventsPage() {
             </div>
             <h3 className="mb-2 text-xl font-semibold text-gray-800">No hay eventos para mostrar</h3>
             <p className="mb-6 text-gray-600">Una vez que crees un evento, lo verás aquí.</p>
-            <Button className="bg-green-500 hover:bg-green-600" onClick={handleCreateEvent}>
+            <Button className="bg-black hover:bg-black" onClick={handleCreateEvent}>
               + Crear evento
             </Button>
           </div>
