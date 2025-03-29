@@ -22,7 +22,7 @@ export default function GettingStarted() {
           <h1 className="text-2xl font-bold tracking-tight">¡Felicitaciones por crear un evento!</h1>
           <p className="text-gray-600">Antes de que su evento pueda comenzar, hay algunas cosas que debe hacer.</p>
         </div>
-        <img src="/balloons.png" alt="Celebración" className="h-24 w-24" />
+        
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
