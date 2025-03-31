@@ -78,6 +78,16 @@ export function Sidebar() {
                                     Amenidades
                                 </Link>
                                 <Link
+                                    to={`/manage/event/${eventId}/check-in`}
+                                    className={`flex items-center gap-3 rounded-lg px-3 py-2 ${location.pathname === `/manage/event/${eventId}/check-in`
+                                        ? 'bg-gray-900 text-white'
+                                        : 'text-gray-300 hover:text-white'
+                                        }`}
+                                >
+                                    <ShoppingCart className="h-4 w-4" />
+                                    Check-in
+                                </Link>
+                                <Link
                                     to={`/manage/event/${eventId}/orders`}
                                     className={`flex items-center gap-3 rounded-lg px-3 py-2 ${location.pathname === `/manage/event/${eventId}/orders`
                                         ? 'bg-gray-900 text-white'
