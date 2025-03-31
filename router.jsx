@@ -7,9 +7,9 @@ import AdminLayout from "./src/layouts/AdminLayout"
 import Login from "./src/views/Login"
 import Register from "./src/views/Register"
 import Welcome from "./src/views/Welcome"
-import Events from "./src/views/Events"
+import Events from "./src/views/Eventos"
 import GettingStarted from "./src/views/GettingStarted"
-import EventConfig from "./src/views/EventConfig"
+import EventSettings from "./src/views/EventSettings"
 import TicketPage from "./src/views/TicketPage"
 import QuestionsPage from "./src/views/QuestionsPage"
 import PromoCodes from "./src/views/PromoCodes"
@@ -76,7 +76,7 @@ const router = createBrowserRouter([
       },
       {
         path: ":eventId/settings",
-        element: <EventConfig />,
+        element: <EventSettings />,
       },
       {
         path: ":eventId/tickets",
