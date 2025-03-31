@@ -10,7 +10,7 @@ export default function WelcomeLayout() {
             
             <header className="bg-gray-700 p-4">
                 <div className="container mx-auto flex items-center">
-                    <h1 className="text-2xl font-bold text-white">hi events</h1>
+                    <h1 className="text-2xl font-bold text-white">PassK</h1>
                     <span className="ml-auto text-pink-400">BG</span>
                 </div>
             </header>

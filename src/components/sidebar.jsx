@@ -11,14 +11,16 @@ export function Sidebar() {
                 <div className="flex h-[60px] items-center border-b px-6">
                     <Link to="/" className="flex items-center gap-2 font-semibold text-white">
                         <img src="/logo.png" alt="Logo" className="h-8 w-8" />
-                        <span>Central Events</span>
+                        <span>PassK</span>
                     </Link>
                 </div>
                 <div className="flex-1 overflow-auto py-2">
                     <nav className="grid items-start px-4 text-sm font-medium">
-                        <Link
-                            to={`/manage/event/${eventId}/getting-started`}
-                            className={`flex items-center gap-3 rounded-lg px-3 py-2 ${location.pathname.includes("getting-started") ? "bg-purple-600 text-white" : "text-gray-300 hover:text-white"}`}
+                        <Link to={`/manage/event/${eventId}/getting-started`}
+                            className={`flex items-center gap-3 rounded-lg px-3 py-2 ${location.pathname === `/manage/event/${eventId}/getting-started`
+                                ? 'bg-gray-900 text-white'
+                                : 'text-gray-300 hover:text-white'
+                                }`}
                         >
                             Empezando
                         </Link>
@@ -28,7 +30,7 @@ export function Sidebar() {
                             <div className="grid gap-1">
                                 <Link to={`/manage/event/${eventId}/dashboard`}
                                     className={`flex items-center gap-3 rounded-lg px-3 py-2 ${location.pathname === `/manage/event/${eventId}/dashboard`
-                                        ? 'bg-purple-600 text-white'
+                                        ? 'bg-gray-900 text-white'
                                         : 'text-gray-300 hover:text-white'
                                         }`}
                                 >
@@ -37,10 +39,10 @@ export function Sidebar() {
                                 </Link>
                                 <Link
                                     to={`/manage/event/${eventId}/settings`}
-                                    className={`flex items-center gap-3 rounded-lg px-3 py-2 ${location.pathname === `/manage/event/${eventId}/settings`}
-                                        ? 'bg-purple-600 text-white'
+                                    className={`flex items-center gap-3 rounded-lg px-3 py-2 ${location.pathname === `/manage/event/${eventId}/settings`
+                                        ? 'bg-gray-900 text-white'
                                         : 'text-gray-300 hover:text-white'
-                                    }`}
+                                        }`}
                                 >
                                     <Settings className="h-4 w-4" />
                                     Ajustes
@@ -48,7 +50,7 @@ export function Sidebar() {
                                 <Link
                                     to={`/manage/event/${eventId}/tickets`}
                                     className={`flex items-center gap-3 rounded-lg px-3 py-2 ${location.pathname === `/manage/event/${eventId}/tickets`
-                                        ? 'bg-purple-600 text-white'
+                                        ? 'bg-gray-900 text-white'
                                         : 'text-gray-300 hover:text-white'
                                         }`}
                                 >
@@ -58,7 +60,7 @@ export function Sidebar() {
                                 <Link
                                     to={`/manage/event/${eventId}/attendees`}
                                     className={`flex items-center gap-3 rounded-lg px-3 py-2 ${location.pathname === `/manage/event/${eventId}/attendees`
-                                        ? 'bg-purple-600 text-white'
+                                        ? 'bg-gray-900 text-white'
                                         : 'text-gray-300 hover:text-white'
                                         }`}
                                 >
@@ -68,17 +70,17 @@ export function Sidebar() {
                                 <Link
                                     to={`/manage/event/${eventId}/amenities`}
                                     className={`flex items-center gap-3 rounded-lg px-3 py-2 ${location.pathname === `/manage/event/${eventId}/amenities`
-                                        ? 'bg-purple-600 text-white'
+                                        ? 'bg-gray-900 text-white'
                                         : 'text-gray-300 hover:text-white'
                                         }`}
                                 >
                                     <Users className="h-4 w-4" />
-                                    Amenidades (En construcción)
+                                    Amenidades
                                 </Link>
                                 <Link
                                     to={`/manage/event/${eventId}/orders`}
-                                    className={`flex items-center gap-3 rounded-lg px-3 py-2 ${location.pathname === `/manage/event/${eventId}orders`
-                                        ? 'bg-purple-600 text-white'
+                                    className={`flex items-center gap-3 rounded-lg px-3 py-2 ${location.pathname === `/manage/event/${eventId}/orders`
+                                        ? 'bg-gray-900 text-white'
                                         : 'text-gray-300 hover:text-white'
                                         }`}
                                 >
@@ -88,7 +90,7 @@ export function Sidebar() {
                                 <Link
                                     to={`/manage/event/${eventId}/questions`}
                                     className={`flex items-center gap-3 rounded-lg px-3 py-2 ${location.pathname === `/manage/event/${eventId}/questions`
-                                        ? 'bg-purple-600 text-white'
+                                        ? 'bg-gray-900 text-white'
                                         : 'text-gray-300 hover:text-white'
                                         }`}
                                 >
@@ -98,7 +100,7 @@ export function Sidebar() {
                                 <Link
                                     to={`/manage/event/${eventId}/promo-codes`}
                                     className={`flex items-center gap-3 rounded-lg px-3 py-2 ${location.pathname === `/manage/event/${eventId}/promo-codes`
-                                        ? 'bg-purple-600 text-white'
+                                        ? 'bg-gray-900 text-white'
                                         : 'text-gray-300 hover:text-white'
                                         }`}
                                 >
@@ -108,7 +110,7 @@ export function Sidebar() {
                                 <Link
                                     to={`/manage/event/${eventId}/messages`}
                                     className={`flex items-center gap-3 rounded-lg px-3 py-2 ${location.pathname === `/manage/event/${eventId}/messages`
-                                        ? 'bg-purple-600 text-white'
+                                        ? 'bg-gray-900 text-white'
                                         : 'text-gray-300 hover:text-white'
                                         }`}
                                 >
@@ -118,7 +120,7 @@ export function Sidebar() {
                                 <Link
                                     to={`/manage/event/${eventId}/capacity`}
                                     className={`flex items-center gap-3 rounded-lg px-3 py-2 ${location.pathname === `/manage/event/${eventId}/capacity`
-                                        ? 'bg-purple-600 text-white'
+                                        ? 'bg-gray-900 text-white'
                                         : 'text-gray-300 hover:text-white'
                                         }`}
                                 >
@@ -128,7 +130,7 @@ export function Sidebar() {
                                 <Link
                                     to={`/manage/event/${eventId}/registration-lists`}
                                     className={`flex items-center gap-3 rounded-lg px-3 py-2 ${location.pathname === `/manage/event/${eventId}/registration-lists`
-                                        ? 'bg-purple-600 text-white'
+                                        ? 'bg-gray-900 text-white'
                                         : 'text-gray-300 hover:text-white'
                                         }`}
                                 >
@@ -144,7 +146,7 @@ export function Sidebar() {
                                 <Link
                                     to={`/manage/event/${eventId}/page-designer`}
                                     className={`flex items-center gap-3 rounded-lg px-3 py-2 ${location.pathname === `/manage/event/${eventId}/page-designer`
-                                        ? 'bg-purple-600 text-white'
+                                        ? 'bg-gray-900 text-white'
                                         : 'text-gray-300 hover:text-white'
                                         }`}
                                 >
@@ -154,7 +156,7 @@ export function Sidebar() {
                                 <Link
                                     to="/manage/event/widget"
                                     className={`flex items-center gap-3 rounded-lg px-3 py-2 ${location.pathname === '/manage/event/widget'
-                                        ? 'bg-purple-600 text-white'
+                                        ? 'bg-gray-900 text-white'
                                         : 'text-gray-300 hover:text-white'
                                         }`}
                                 >

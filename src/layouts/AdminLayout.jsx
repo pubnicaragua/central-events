@@ -12,7 +12,7 @@ function AdminLayout() {
                     <div className="flex items-center">
                         <div className="flex flex-col">
                             <h1 className="ml-4 text-4xl font-semibold text-gray-900">Panel de Administrador</h1>
-                            <p className="ml-4 font-semibold text-gray-900">Central Events</p>
+                            <p className="ml-4 font-semibold text-gray-900">PassK</p>
                         </div>
                     </div>
 

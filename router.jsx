@@ -16,8 +16,8 @@ import QuestionsPage from "./src/views/QuestionsPage"
 import PromoCodes from "./src/views/PromoCodes"
 import DashboardPage from "./src/views/dashboard/page"
 import Home from "./src/views/Home"
-import EventDetail from "./src/views/EventDetail" // Nueva importación
-import Checkout from "./src/views/Checkout" // Nueva importación
+import EventDetail from "./src/views/EventDetail"
+import Checkout from "./src/views/Checkout"
 import OrderConfirmation from "./src/views/OrderConfirmation"
 import AttendeesPage from "./src/views/Attendants"
 import OrdersPage from "./src/views/OrdersPage"
@@ -28,6 +28,9 @@ import HomepageDesigner from "./src/views/HomepageDesigner"
 import GuestPage from "./src/views/GuestPage"
 import ProfilePage from "./src/views/ProfilePage"
 import Amenidades from "./src/views/Amenities"
+import CheckInPage from "./src/views/CheckInPage" // Nueva importación
+import AmenitiesPage from "./src/views/AmenittiesPage"
+import ConfirmationPage from "./src/views/ConfirmationPage"
 
 const router = createBrowserRouter([
   {
@@ -39,10 +42,10 @@ const router = createBrowserRouter([
         element: <Events />,
       },
       {
-        path: 'admin/profile',
+        path: "admin/profile",
         element: <ProfilePage />,
       },
-      // Añadimos las nuevas rutas aquí para que usen WelcomeLayout
+      // Rutas públicas
       {
         path: "event/:eventId",
         element: <EventDetail />,
@@ -50,6 +53,14 @@ const router = createBrowserRouter([
       {
         path: "checkout/:eventId/:ticketId",
         element: <Checkout />,
+      },
+      {
+        path: "amenities/:eventId/:ticketId",
+        element: <AmenitiesPage />,
+      },
+      {
+        path: "confirm/:eventId/:ticketId",
+        element: <ConfirmationPage />,
       },
       {
         path: "order-confirmation/:orderId",
@@ -134,6 +145,11 @@ const router = createBrowserRouter([
       {
         path: ":eventId/attendees",
         element: <AttendeesPage />,
+      },
+      // Nueva ruta para el check-in de asistentes
+      {
+        path: ":eventId/check-in",
+        element: <CheckInPage />,
       },
     ],
   },
