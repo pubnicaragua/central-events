@@ -10,7 +10,8 @@ import Welcome from "./src/views/Welcome"
 import Events from "./src/views/Eventos"
 import GettingStarted from "./src/views/GettingStarted"
 import EventSettings from "./src/views/EventSettings"
-import TicketPage from "./src/views/TicketPage"
+import TicketsSettings from "./src/views/TicketsSettings"
+import TicketLevels from "./src/views/TicketLevels"
 import QuestionsPage from "./src/views/QuestionsPage"
 import PromoCodes from "./src/views/PromoCodes"
 import DashboardPage from "./src/views/dashboard/page"
@@ -80,7 +81,11 @@ const router = createBrowserRouter([
       },
       {
         path: ":eventId/tickets",
-        element: <TicketPage />,
+        element: <TicketsSettings />,
+      },
+      {
+        path: ":eventId/tickets/levels/:ticketId",
+        element: <TicketLevels />,
       },
       {
         path: ":eventId/orders",

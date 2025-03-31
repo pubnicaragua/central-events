@@ -58,7 +58,7 @@ function Events() {
 
             const { data, error } = await supabase
                 .from("events")
-                .select("*, organizer:organizer_id(name)")
+                .select("*, organizers:organizer_id(name)")
                 .eq("user_id", userId)
                 .eq("status", status)
                 .order("start_date", { ascending: !isRecent });
@@ -189,7 +189,7 @@ function Events() {
                                                 setShowCreateMenu(false);
                                             }}
                                         >
-                                            <span className="mr-2">🗕️</span> Evento
+                                            <span className="mr-2"> 🗕️</span> Evento
                                         </button>
                                         <button
                                             className="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center"

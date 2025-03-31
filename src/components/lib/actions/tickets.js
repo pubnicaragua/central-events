@@ -77,7 +77,7 @@ export async function deleteTicket(id) {
  * @returns {Promise<Object>} Ticket escalonado creado
  */
 export async function createEscaledTicket(escaledTicketData) {
-  const { data, error } = await supabase.from("escaled_ticket").insert([escaledTicketData]).select()
+  const { data, error } = await supabase.from("ticket_levels").insert([escaledTicketData]).select()
 
   if (error) throw error
   return data[0]
@@ -88,7 +88,7 @@ export async function createEscaledTicket(escaledTicketData) {
  * @returns {Promise<Array>} Lista de tickets escalonados
  */
 export async function getEscaledTickets() {
-  const { data, error } = await supabase.from("escaled_ticket").select("*").order("created_at", { ascending: false })
+  const { data, error } = await supabase.from("ticket_levels").select("*").order("created_at", { ascending: false })
 
   if (error) throw error
   return data

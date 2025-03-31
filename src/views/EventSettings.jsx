@@ -8,6 +8,7 @@ import OtherSettings from "../components/OtherSettings"
 import LocationSettings from "../components/LocationSettingS";
 import SeoSettings from "../components/SeoSettings"
 import PrintError from "../utils/helpers"
+import { ArrowLeft } from "lucide-react";
 
 function EventSettings() {
     const { eventId } = useParams();
@@ -74,9 +75,12 @@ function EventSettings() {
     return (
         <div className="container mx-auto p-4">
             <div className="mb-6">
-                <h1 className="text-2xl font-bold">Configuración del evento numero {eventId}</h1>
+                <h1 className="text-2xl font-bold">Configuración del evento {event.name}</h1>
 
-                <p className="font-medium hover:cursor-pointer" onClick={() => navigate("/")}>{"< Eventos"}</p>
+                <p className="font-medium text-gray-600 hover:cursor-pointer flex items-center gap-1" onClick={() => navigate("/")}>
+                    <ArrowLeft size={20} />
+                    Volver a Eventos
+                </p>
             </div>
 
             <h2 className="text-xl font-bold mb-4">Ajustes</h2>

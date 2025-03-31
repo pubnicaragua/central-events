@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { DotsVerticalIcon, EyeIcon, CogIcon, DuplicateIcon, ArchiveIcon } from "./Icons"
+import { DotsVerticalIcon, EyeIcon, CogIcon, DuplicateIcon, ArchiveIcon } from "../components/Icons"
 import PropTypes from "prop-types";
 
 function EventCard({ event, onDuplicate, onArchive }) {
