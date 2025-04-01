@@ -31,6 +31,7 @@ import Amenidades from "./src/views/Amenities"
 import CheckInPage from "./src/views/CheckInPage" // Nueva importación
 import AmenitiesPage from "./src/views/AmenittiesPage"
 import ConfirmationPage from "./src/views/ConfirmationPage"
+import RifasPage from "./src/views/Rifas."
 
 const router = createBrowserRouter([
   {
@@ -150,6 +151,10 @@ const router = createBrowserRouter([
       {
         path: ":eventId/check-in",
         element: <CheckInPage />,
+      },
+      {
+        path: ":eventId/raffles",
+        element: <RifasPage />,
       },
     ],
   },
