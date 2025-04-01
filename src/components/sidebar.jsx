@@ -1,7 +1,7 @@
 import { Link, useLocation } from "react-router-dom"
 import { LayoutDashboard, Settings, Ticket, Users, ShoppingCart, HelpCircle, Tag, MessageSquare, Users2, ClipboardList, Palette } from 'lucide-react'
 
-export function Sidebar() {
+export default function Sidebar() {
     const location = useLocation();
     const eventId = location.pathname.split("/")[3]; // Extraer el eventId de la URL
 
