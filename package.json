@@ -71,6 +71,6 @@
     "vite": "^6.1.0"
   },
   "overrides": {
-    "camelcase-css": "0.0.0"
+    "camelcase-css": "2.0.1"
   }
 }
