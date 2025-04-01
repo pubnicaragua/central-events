@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom"
-import { LayoutDashboard, Settings, Ticket, Users, ShoppingCart, HelpCircle, Tag, MessageSquare, Users2, ClipboardList, Palette, Code2 } from 'lucide-react'
+import { LayoutDashboard, Settings, Ticket, Users, ShoppingCart, HelpCircle, Tag, MessageSquare, Users2, ClipboardList, Palette } from 'lucide-react'
 
 export function Sidebar() {
     const location = useLocation();
@@ -98,6 +98,16 @@ export function Sidebar() {
                                     Pedidos
                                 </Link>
                                 <Link
+                                    to={`/manage/event/${eventId}/raffles`}
+                                    className={`flex items-center gap-3 rounded-lg px-3 py-2 ${location.pathname === `/manage/event/${eventId}/raffles`
+                                        ? 'bg-gray-900 text-white'
+                                        : 'text-gray-300 hover:text-white'
+                                        }`}
+                                >
+                                    <HelpCircle className="h-4 w-4" />
+                                    Rifas
+                                </Link>
+                                <Link
                                     to={`/manage/event/${eventId}/questions`}
                                     className={`flex items-center gap-3 rounded-lg px-3 py-2 ${location.pathname === `/manage/event/${eventId}/questions`
                                         ? 'bg-gray-900 text-white'
@@ -162,16 +172,6 @@ export function Sidebar() {
                                 >
                                     <Palette className="h-4 w-4" />
                                     Diseñador de página de inicio
-                                </Link>
-                                <Link
-                                    to="/manage/event/widget"
-                                    className={`flex items-center gap-3 rounded-lg px-3 py-2 ${location.pathname === '/manage/event/widget'
-                                        ? 'bg-gray-900 text-white'
-                                        : 'text-gray-300 hover:text-white'
-                                        }`}
-                                >
-                                    <Code2 className="h-4 w-4" />
-                                    En construcción
                                 </Link>
                             </div>
                         </div>

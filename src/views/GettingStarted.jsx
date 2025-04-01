@@ -1,6 +1,6 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Link } from "react-router-dom"
-import { Ticket, Settings, Layout, Radio, CreditCard, Mail, ChevronRight } from "lucide-react"
+import { Ticket, Settings, Layout, Radio, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 export default function GettingStarted() {
@@ -22,7 +22,7 @@ export default function GettingStarted() {
           <h1 className="text-2xl font-bold tracking-tight">¡Felicitaciones por crear un evento!</h1>
           <p className="text-gray-600">Antes de que su evento pueda comenzar, hay algunas cosas que debe hacer.</p>
         </div>
-        
+
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
@@ -72,7 +72,7 @@ export default function GettingStarted() {
           <p className="mt-2 text-sm text-gray-600">
             Personalice la página de su evento para que coincida con su marca y estilo.
           </p>
-          <Button className="mt-4" variant="secondary">
+          <Button className="mt-4" variant="secondary" onClick={() => navigate(`/manage/event/${eventId}/page-designer`)} >
             Personaliza la página de tu evento
           </Button>
         </div>
@@ -90,40 +90,6 @@ export default function GettingStarted() {
           <Button className="mt-4" variant="secondary">
             Configura tu evento en vivo
           </Button>
-        </div>
-
-        <div className="rounded-lg border bg-card p-6">
-          <div className="flex items-center gap-4">
-            <div className="rounded-full bg-orange-100 p-2.5">
-              <CreditCard className="h-5 w-5 text-orange-600" />
-            </div>
-            <h3 className="font-semibold">Conéctate con Stripe</h3>
-          </div>
-          <p className="mt-2 text-sm text-gray-600">Conecte su cuenta Stripe para comenzar a recibir pagos.</p>
-          <Button className="mt-4" variant="secondary">
-            Conéctate con Stripe
-          </Button>
-        </div>
-
-        <div className="rounded-lg border bg-card p-6">
-          <div className="flex items-center gap-4">
-            <div className="rounded-full bg-emerald-100 p-2.5">
-              <Mail className="h-5 w-5 text-emerald-600" />
-            </div>
-            <h3 className="font-semibold">Confirma tu dirección de correo electrónico</h3>
-          </div>
-          <p className="mt-2 text-sm text-gray-600">
-            Debes confirmar tu dirección de correo electrónico antes de que tu evento pueda comenzar.
-          </p>
-          <div className="mt-4 flex h-8 items-center">
-            <svg viewBox="0 0 24 24" className="h-5 w-5 text-green-500">
-              <path
-                fill="currentColor"
-                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
-              />
-            </svg>
-            <span className="ml-2 text-sm text-green-600">Verificado</span>
-          </div>
         </div>
       </div>
     </div>

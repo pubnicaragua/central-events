@@ -1,527 +1,428 @@
-/* eslint-disable no-unused-vars */
 "use client"
 
 import { useState, useEffect } from "react"
-import { useParams, Link } from "react-router-dom"
+import { useParams } from "react-router-dom"
 import supabase from "../api/supabase"
-import { toast } from "react-hot-toast"
-import { Search, Plus, Edit, Trash2, Eye, Download, ChevronDown, ChevronUp } from "lucide-react"
-import AddAttendeeModal from "../components/AddAttendeeModal"
-import EditAttendeeModal from "../components/EditAttendeeModal"
-import ConfirmDialog from "../components/ConfirmDialog"
+import { Edit, Eye, QrCode, Search, Trash, Download } from "lucide-react"
+import { Button } from "../components/ui/button"
+import { Input } from "../components/ui/input"
+import { Badge } from "../components/ui/badge"
+import ConfirmDialog from "../components/confirm-dialog"
+import AgregarAsistenteModal from "../components/agregar-asistente-modal"
+import EditarAsistenteModal from "../components/editar-asistente-modal"
+import VerAmenidadesModal from "../components/ver-amenidades-modal"
+import QrCodeModal from "../components/qr-code-modal"
 
-function AttendeesPage() {
+const AsistentesPage = () => {
   const { eventId } = useParams()
-  const [attendees, setAttendees] = useState([])
-  const [filteredAttendees, setFilteredAttendees] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
   const [searchQuery, setSearchQuery] = useState("")
-  const [sortField, setSortField] = useState("name")
-  const [sortDirection, setSortDirection] = useState("asc")
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [attendees, setAttendees] = useState([])
+  const [agregarModalOpen, setAgregarModalOpen] = useState(false)
+  const [editarModalOpen, setEditarModalOpen] = useState(false)
+  const [amenidadesModalOpen, setAmenidadesModalOpen] = useState(false)
+  const [qrCodeModalOpen, setQrCodeModalOpen] = useState(false)
   const [selectedAttendee, setSelectedAttendee] = useState(null)
-  const [statusFilter, setStatusFilter] = useState("all")
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const [tickets, setTickets] = useState([])
-  const [ticketFilter, setTicketFilter] = useState("all")
 
+  // Cargar asistentes
   useEffect(() => {
     fetchAttendees()
     fetchTickets()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [eventId, supabase])
-
-  const fetchTickets = async () => {
-    try {
-      const { data, error } = await supabase.from("tickets").select("id, name").eq("event_id", eventId)
-
-      if (error) throw error
-      setTickets(data || [])
-    } catch (error) {
-      console.error("Error fetching tickets:", error)
-    }
-  }
+  }, [eventId])
 
   const fetchAttendees = async () => {
     try {
-      setLoading(true)
-
-      // Primero obtenemos todas las órdenes para este evento
-      const { data: ordersData, error: ordersError } = await supabase
-        .from("orders")
-        .select("id, ticket_id")
-        .eq("event_id", eventId)
-
-      if (ordersError) throw ordersError
-
-      if (!ordersData || ordersData.length === 0) {
-        setAttendees([])
-        setFilteredAttendees([])
-        setLoading(false)
-        return
-      }
-
-      const orderIds = ordersData.map((order) => order.id)
-
-      // Luego obtenemos todos los asistentes relacionados con esas órdenes
-      const { data: attendeesData, error: attendeesError } = await supabase
+      setIsLoading(true)
+      const { data, error } = await supabase
         .from("attendants")
         .select(`
           *,
-          order:order_id(
-            id,
-            name,
-            email,
-            ticket:ticket_id(
-              id,
-              name
-            )
-          )
+          tickets(name)
         `)
-        .in("order_id", orderIds)
+        .eq("event_id", eventId)
+        .order("created_at", { ascending: false })
 
-      if (attendeesError) throw attendeesError
+      if (error) throw error
 
-      setAttendees(attendeesData || [])
-      setFilteredAttendees(attendeesData || [])
-    } catch (err) {
-      console.error("Error fetching attendees:", err)
-      setError("Error al cargar los datos de los asistentes")
+      setAttendees(data || [])
+    } catch (error) {
+      console.error("Error al cargar los asistentes:", error)
     } finally {
-      setLoading(false)
+      setIsLoading(false)
     }
   }
 
-  useEffect(() => {
-    // Aplicar filtros y búsqueda
-    let result = [...attendees]
+  const fetchTickets = async () => {
+    try {
+      const { data, error } = await supabase.from("tickets").select("*").eq("event_id", eventId)
 
-    // Filtrar por estado
-    if (statusFilter !== "all") {
-      result = result.filter((attendee) => attendee.status === statusFilter)
-    }
+      if (error) throw error
 
-    // Filtrar por ticket
-    if (ticketFilter !== "all") {
-      result = result.filter((attendee) => attendee.order?.ticket?.id === ticketFilter)
-    }
-
-    // Filtrar por búsqueda
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase()
-      result = result.filter(
-        (attendee) =>
-          attendee.name?.toLowerCase().includes(query) ||
-          attendee.second_name?.toLowerCase().includes(query) ||
-          attendee.email?.toLowerCase().includes(query) ||
-          attendee.code?.toLowerCase().includes(query),
-      )
-    }
-
-    // Ordenar resultados
-    result.sort((a, b) => {
-      let fieldA, fieldB
-
-      // Determinar los campos a comparar según el campo de ordenamiento
-      switch (sortField) {
-        case "name":
-          fieldA = `${a.name || ""} ${a.second_name || ""}`.toLowerCase()
-          fieldB = `${b.name || ""} ${b.second_name || ""}`.toLowerCase()
-          break
-        case "email":
-          fieldA = (a.email || "").toLowerCase()
-          fieldB = (b.email || "").toLowerCase()
-          break
-        case "order":
-          fieldA = a.order_id || 0
-          fieldB = b.order_id || 0
-          break
-        case "status":
-          fieldA = (a.status || "").toLowerCase()
-          fieldB = (b.status || "").toLowerCase()
-          break
-        default:
-          fieldA = a[sortField] || ""
-          fieldB = b[sortField] || ""
-      }
-
-      // Ordenar ascendente o descendente
-      if (sortDirection === "asc") {
-        return fieldA > fieldB ? 1 : -1
-      } else {
-        return fieldA < fieldB ? 1 : -1
-      }
-    })
-
-    setFilteredAttendees(result)
-  }, [attendees, searchQuery, sortField, sortDirection, statusFilter, ticketFilter])
-
-  const handleSort = (field) => {
-    if (sortField === field) {
-      // Si ya estamos ordenando por este campo, cambiamos la dirección
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc")
-    } else {
-      // Si es un nuevo campo, ordenamos ascendente por defecto
-      setSortField(field)
-      setSortDirection("asc")
+      setTickets(data || [])
+    } catch (error) {
+      console.error("Error al cargar los tickets:", error)
     }
   }
 
+  // Agregar asistente
   const handleAddAttendee = async (attendeeData) => {
     try {
-      // Primero creamos o buscamos una orden
-      let orderId = attendeeData.order_id
+      // Extraer selectedAmenities del objeto attendeeData
+      const { selectedAmenities, ...attendantData } = attendeeData
 
-      if (!orderId) {
-        // Si no se proporcionó un ID de orden, creamos una nueva
-        const { data: orderData, error: orderError } = await supabase
-          .from("orders")
-          .insert({
-            name: `${attendeeData.name} ${attendeeData.second_name || ""}`,
-            email: attendeeData.email,
-            event_id: eventId,
-            ticket_id: attendeeData.ticket_id || null,
-            status: "COMPLETED",
-            quantity: 1,
-          })
-          .select()
-          .single()
+      // Generar código alfanumérico de 6 dígitos
+      const code = generateRandomCode()
 
-        if (orderError) throw orderError
-        orderId = orderData.id
-      }
-
-      // Luego creamos el asistente
-      const { data, error } = await supabase
+      // Crear asistente sin incluir selectedAmenities y sin order_id
+      const { data: newAttendee, error } = await supabase
         .from("attendants")
         .insert({
-          name: attendeeData.name,
-          second_name: attendeeData.second_name || "",
-          email: attendeeData.email,
-          code: attendeeData.code || null,
-          status: attendeeData.status || "ACTIVE",
-          order_id: orderId,
+          name: attendantData.name,
+          second_name: attendantData.second_name,
+          email: attendantData.email,
+          status: attendantData.status,
+          ticket_id: attendantData.ticket_id,
+          code,
+          event_id: eventId,
         })
         .select()
 
       if (error) throw error
 
-      toast.success("Asistente agregado correctamente")
-      fetchAttendees() // Actualizamos la lista
-      return { success: true, data }
+      // Si se seleccionaron amenidades, asignarlas al asistente
+      if (selectedAmenities && selectedAmenities.length > 0) {
+        const amenityAssignments = selectedAmenities.map((amenity) => ({
+          amenitie_id: amenity.id,
+          attendee_id: newAttendee[0].id,
+          quantity: 1,
+          is_active: true,
+        }))
+
+        const { error: assignError } = await supabase.from("amenities_attendees").insert(amenityAssignments)
+
+        if (assignError) throw assignError
+      }
+
+      setAgregarModalOpen(false)
+      await fetchAttendees()
     } catch (error) {
-      console.error("Error adding attendee:", error)
-      toast.error("Error al agregar el asistente")
-      return { success: false, error }
+      console.error("Error al agregar el asistente:", error)
     }
   }
 
+  // Editar asistente
   const handleEditAttendee = async (attendeeData) => {
     try {
-      const { data, error } = await supabase
+      // Extraer selectedAmenities del objeto attendeeData
+      const { selectedAmenities, ...attendantData } = attendeeData
+
+      // Actualizar datos del asistente sin incluir selectedAmenities y sin order_id
+      const { error } = await supabase
         .from("attendants")
         .update({
-          name: attendeeData.name,
-          second_name: attendeeData.second_name || "",
-          email: attendeeData.email,
-          code: attendeeData.code || null,
-          status: attendeeData.status || "ACTIVE",
+          name: attendantData.name,
+          second_name: attendantData.second_name,
+          email: attendantData.email,
+          status: attendantData.status,
+          ticket_id: attendantData.ticket_id,
         })
-        .eq("id", attendeeData.id)
-        .select()
+        .eq("id", selectedAttendee.id)
 
       if (error) throw error
 
-      toast.success("Asistente actualizado correctamente")
-      fetchAttendees() // Actualizamos la lista
-      return { success: true, data }
+      // Gestionar amenidades
+      if (selectedAmenities) {
+        // Primero, obtener las amenidades actuales del asistente
+        const { data: currentAmenities, error: fetchError } = await supabase
+          .from("amenities_attendees")
+          .select("amenitie_id")
+          .eq("attendee_id", selectedAttendee.id)
+
+        if (fetchError) throw fetchError
+
+        const currentIds = currentAmenities.map((item) => item.amenitie_id)
+        const newIds = selectedAmenities.map((item) => item.id)
+
+        // Amenidades a eliminar (están en current pero no en new)
+        const toRemove = currentIds.filter((id) => !newIds.includes(id))
+
+        // Amenidades a agregar (están en new pero no en current)
+        const toAdd = selectedAmenities
+          .filter((item) => !currentIds.includes(item.id))
+          .map((amenity) => ({
+            amenitie_id: amenity.id,
+            attendee_id: selectedAttendee.id,
+            quantity: 1,
+            is_active: true,
+          }))
+
+        // Eliminar amenidades que ya no están seleccionadas
+        if (toRemove.length > 0) {
+          const { error: removeError } = await supabase
+            .from("amenities_attendees")
+            .delete()
+            .eq("attendee_id", selectedAttendee.id)
+            .in("amenitie_id", toRemove)
+
+          if (removeError) throw removeError
+        }
+
+        // Agregar nuevas amenidades
+        if (toAdd.length > 0) {
+          const { error: addError } = await supabase.from("amenities_attendees").insert(toAdd)
+
+          if (addError) throw addError
+        }
+      }
+
+      setEditarModalOpen(false)
+      await fetchAttendees()
     } catch (error) {
-      console.error("Error updating attendee:", error)
-      toast.error("Error al actualizar el asistente")
-      return { success: false, error }
+      console.error("Error al editar el asistente:", error)
     }
   }
 
-  const handleDeleteAttendee = async () => {
-    if (!selectedAttendee) return
-
+  // Eliminar asistente
+  const handleDeleteAttendee = async (attendeeId) => {
     try {
-      const { error } = await supabase.from("attendants").delete().eq("id", selectedAttendee.id)
+      // Primero eliminar las relaciones en amenities_attendees
+      const { error: relError } = await supabase.from("amenities_attendees").delete().eq("attendee_id", attendeeId)
+
+      if (relError) throw relError
+
+      // Luego eliminar el asistente
+      const { error } = await supabase.from("attendants").delete().eq("id", attendeeId)
 
       if (error) throw error
 
-      toast.success("Asistente eliminado correctamente")
-      fetchAttendees() // Actualizamos la lista
-      setIsDeleteDialogOpen(false)
-      setSelectedAttendee(null)
+      await fetchAttendees()
     } catch (error) {
-      console.error("Error deleting attendee:", error)
-      toast.error("Error al eliminar el asistente")
+      console.error("Error al eliminar el asistente:", error)
     }
   }
 
-  const handleExportCSV = () => {
-    // Preparar los datos para exportar
-    const csvData = filteredAttendees.map((attendee) => ({
-      ID: attendee.id,
-      Nombre: attendee.name,
-      Apellido: attendee.second_name || "",
-      Email: attendee.email,
-      Código: attendee.code || "",
-      Estado: attendee.status,
-      "ID Orden": attendee.order_id,
-      Ticket: attendee.order?.ticket?.name || "",
-    }))
+  // Generar código aleatorio alfanumérico de 6 caracteres
+  const generateRandomCode = () => {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+    let code = ""
+    for (let i = 0; i < 6; i++) {
+      code += chars.charAt(Math.floor(Math.random() * chars.length))
+    }
+    return code
+  }
 
-    // Convertir a CSV
-    const headers = Object.keys(csvData[0] || {}).join(",")
-    const rows = csvData.map((row) =>
-      Object.values(row)
-        .map((value) => `"${value}"`)
-        .join(","),
-    )
-    const csv = [headers, ...rows].join("\n")
+  // Exportar asistentes a CSV
+  const handleExport = () => {
+    const headers = ["Nombre", "Apellido", "Email", "Código", "Estado", "Ticket"]
+
+    const csvData = attendees.map((attendee) => [
+      attendee.name || "",
+      attendee.second_name || "",
+      attendee.email || "",
+      attendee.code || "",
+      attendee.status || "",
+      attendee.tickets?.name || "",
+    ])
+
+    // Crear contenido CSV
+    const csvContent = [headers.join(","), ...csvData.map((row) => row.join(","))].join("\n")
 
     // Crear y descargar el archivo
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" })
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
     const url = URL.createObjectURL(blob)
     const link = document.createElement("a")
     link.setAttribute("href", url)
     link.setAttribute("download", `asistentes-evento-${eventId}.csv`)
+    link.style.visibility = "hidden"
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
   }
 
-  const openEditModal = (attendee) => {
-    setSelectedAttendee(attendee)
-    setIsEditModalOpen(true)
-  }
-
-  const openDeleteDialog = (attendee) => {
-    setSelectedAttendee(attendee)
-    setIsDeleteDialogOpen(true)
-  }
-
-  const renderSortIcon = (field) => {
-    if (sortField !== field) return null
-    return sortDirection === "asc" ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
-  }
-
-  if (loading) {
+  const filteredAttendees = attendees.filter((attendee) => {
+    const searchLower = searchQuery.toLowerCase()
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
-      </div>
+      (attendee.name && attendee.name.toLowerCase().includes(searchLower)) ||
+      (attendee.second_name && attendee.second_name.toLowerCase().includes(searchLower)) ||
+      (attendee.code && attendee.code.toLowerCase().includes(searchLower))
     )
+  })
+
+  const getStatusBadge = (status) => {
+    switch (status) {
+      case "confirmado":
+        return <Badge className="bg-green-500">Confirmado</Badge>
+      case "no confirmado":
+        return (
+          <Badge variant="outline" className="border-yellow-500 text-yellow-500">
+            No confirmado
+          </Badge>
+        )
+      case "cancelado":
+        return <Badge className="bg-red-500">Cancelado</Badge>
+      default:
+        return <Badge variant="outline">No confirmado</Badge>
+    }
   }
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="p-4 max-w-7xl mx-auto">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Asistentes</h1>
-        <div className="flex space-x-2">
-          <button
-            onClick={() => handleExportCSV()}
-            className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 flex items-center"
-          >
-            <Download className="h-4 w-4 mr-2" />
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={handleExport} className="flex items-center gap-2">
+            <Download className="w-4 h-4" />
             Exportar
-          </button>
-          <button
-            onClick={() => setIsAddModalOpen(true)}
-            className="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 flex items-center"
-          >
-            <Plus className="h-4 w-4 mr-2" />
+          </Button>
+          <Button onClick={() => setAgregarModalOpen(true)} className="bg-purple-600 hover:bg-purple-700 text-white">
             Agregar
-          </button>
+          </Button>
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow-md p-6">
-        {/* Filtros y búsqueda */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-          <div className="relative w-full md:w-96">
-            <input
-              type="text"
-              placeholder="Buscar por nombre, email o código..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-4 py-2 pl-10 border rounded-md"
-            />
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-          </div>
+      <div className="flex items-center mb-6 relative">
+        <Search className="w-4 h-4 absolute left-3 text-gray-400" />
+        <Input
+          type="text"
+          placeholder="Buscar por nombre o código..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="pl-9 max-w-lg"
+        />
+      </div>
 
-          <div className="flex flex-wrap gap-2">
-            <div className="relative">
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="appearance-none bg-white border rounded-md px-4 py-2 pr-8"
-              >
-                <option value="all">Todos los estados</option>
-                <option value="ACTIVE">No confirmados</option>
-                <option value="CONFIRMED">Confirmados</option>
-              </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                <ChevronDown className="h-4 w-4" />
-              </div>
-            </div>
-
-            <div className="relative">
-              <select
-                value={ticketFilter}
-                onChange={(e) => setTicketFilter(e.target.value)}
-                className="appearance-none bg-white border rounded-md px-4 py-2 pr-8"
-              >
-                <option value="all">Todos los tickets</option>
-                {tickets.map((ticket) => (
-                  <option key={ticket.id} value={ticket.id}>
-                    {ticket.name}
-                  </option>
-                ))}
-              </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                <ChevronDown className="h-4 w-4" />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Tabla de asistentes */}
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+      {isLoading ? (
+        <div className="text-center py-8">Cargando...</div>
+      ) : filteredAttendees.length === 0 ? (
+        <div className="text-center py-8 text-gray-500">No hay asistentes registrados</div>
+      ) : (
+        <div className="overflow-x-auto bg-white rounded-lg shadow">
+          <table className="w-full">
+            <thead className="bg-gray-50 border-b">
               <tr>
-                <th
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                  onClick={() => handleSort("name")}
-                >
-                  <div className="flex items-center">Nombre {renderSortIcon("name")}</div>
-                </th>
-                <th
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                  onClick={() => handleSort("email")}
-                >
-                  <div className="flex items-center">Email {renderSortIcon("email")}</div>
-                </th>
-                <th
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                  onClick={() => handleSort("order")}
-                >
-                  <div className="flex items-center">Orden {renderSortIcon("order")}</div>
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Ticket
-                </th>
-                <th
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                  onClick={() => handleSort("status")}
-                >
-                  <div className="flex items-center">Estado {renderSortIcon("status")}</div>
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Acciones
-                </th>
+                <th className="px-4 py-3 text-left">NOMBRE</th>
+                <th className="px-4 py-3 text-left">EMAIL</th>
+                <th className="px-4 py-3 text-left">CÓDIGO</th>
+                <th className="px-4 py-3 text-left">TICKET</th>
+                <th className="px-4 py-3 text-left">ESTADO</th>
+                <th className="px-4 py-3 text-right">ACCIONES</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredAttendees.length > 0 ? (
-                filteredAttendees.map((attendee) => (
-                  <tr key={attendee.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        {attendee.name} {attendee.second_name}
-                      </div>
-                      {attendee.code && <div className="text-xs text-gray-500">Código: {attendee.code}</div>}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{attendee.email}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">#{attendee.order_id}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {attendee.order?.ticket?.name || "N/A"}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${attendee.status === "CONFIRMED"
-                          ? "bg-green-100 text-green-800"
-                          : "bg-yellow-100 text-yellow-800"
-                          }`}
+            <tbody>
+              {filteredAttendees.map((attendee) => (
+                <tr key={attendee.id} className="border-b">
+                  <td className="px-4 py-4">
+                    {attendee.name} {attendee.second_name}
+                  </td>
+                  <td className="px-4 py-4">{attendee.email || "-"}</td>
+                  <td className="px-4 py-4">
+                    <code className="bg-gray-100 px-2 py-1 rounded text-sm font-mono">{attendee.code}</code>
+                  </td>
+                  <td className="px-4 py-4">{attendee.tickets?.name || "-"}</td>
+                  <td className="px-4 py-4">{getStatusBadge(attendee.status)}</td>
+                  <td className="px-4 py-4">
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          setSelectedAttendee(attendee)
+                          setAmenidadesModalOpen(true)
+                        }}
+                        title="Ver amenidades"
                       >
-                        {attendee.status === "CONFIRMED" ? "Confirmado" : "No confirmado"}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex justify-end space-x-2">
-                        <button
-                          onClick={() => openEditModal(attendee)}
-                          className="text-indigo-600 hover:text-indigo-900"
-                          title="Editar"
-                        >
-                          <Edit className="h-5 w-5" />
-                        </button>
-                        <button
-                          onClick={() => openDeleteDialog(attendee)}
-                          className="text-red-600 hover:text-red-900"
-                          title="Eliminar"
-                        >
-                          <Trash2 className="h-5 w-5" />
-                        </button>
-                        <Link
-                          to={`/order/${attendee.order_id}`}
-                          className="text-blue-600 hover:text-blue-900"
-                          title="Ver orden"
-                        >
-                          <Eye className="h-5 w-5" />
-                        </Link>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
-                    No hay asistentes registrados para este evento
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          setSelectedAttendee(attendee)
+                          setQrCodeModalOpen(true)
+                        }}
+                        title="Generar QR"
+                      >
+                        <QrCode className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          setSelectedAttendee(attendee)
+                          setEditarModalOpen(true)
+                        }}
+                        title="Editar"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        onClick={() => {
+                          setSelectedAttendee(attendee)
+                          setConfirmDialogOpen(true)
+                        }}
+                        title="Eliminar"
+                      >
+                        <Trash className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </td>
                 </tr>
-              )}
+              ))}
             </tbody>
           </table>
         </div>
-      </div>
+      )}
 
       {/* Modal para agregar asistente */}
-      {isAddModalOpen && (
-        <AddAttendeeModal
-          isOpen={isAddModalOpen}
-          onClose={() => setIsAddModalOpen(false)}
-          onSubmit={handleAddAttendee}
+      <AgregarAsistenteModal
+        isOpen={agregarModalOpen}
+        onClose={() => setAgregarModalOpen(false)}
+        onSave={handleAddAttendee}
+        eventId={eventId}
+        tickets={tickets}
+      />
+
+      {/* Modal para editar asistente */}
+      {selectedAttendee && (
+        <EditarAsistenteModal
+          isOpen={editarModalOpen}
+          onClose={() => setEditarModalOpen(false)}
+          onSave={handleEditAttendee}
+          attendee={selectedAttendee}
           eventId={eventId}
           tickets={tickets}
         />
       )}
 
-      {/* Modal para editar asistente */}
-      {isEditModalOpen && selectedAttendee && (
-        <EditAttendeeModal
-          isOpen={isEditModalOpen}
-          onClose={() => {
-            setIsEditModalOpen(false)
-            setSelectedAttendee(null)
-          }}
-          onSubmit={handleEditAttendee}
+      {/* Modal para ver amenidades */}
+      {selectedAttendee && (
+        <VerAmenidadesModal
+          isOpen={amenidadesModalOpen}
+          onClose={() => setAmenidadesModalOpen(false)}
           attendee={selectedAttendee}
         />
       )}
 
-      {/* Diálogo de confirmación para eliminar */}
+      {/* Modal para generar QR */}
+      {selectedAttendee && (
+        <QrCodeModal isOpen={qrCodeModalOpen} onClose={() => setQrCodeModalOpen(false)} attendee={selectedAttendee} />
+      )}
+
+      {/* Modal de confirmación para eliminar */}
       <ConfirmDialog
-        isOpen={isDeleteDialogOpen}
-        onClose={() => setIsDeleteDialogOpen(false)}
-        onConfirm={handleDeleteAttendee}
+        isOpen={confirmDialogOpen}
+        onClose={() => setConfirmDialogOpen(false)}
+        onConfirm={() => {
+          handleDeleteAttendee(selectedAttendee?.id)
+          setConfirmDialogOpen(false)
+        }}
         title="Eliminar asistente"
-        message={`¿Estás seguro de que deseas eliminar a ${selectedAttendee?.name} ${selectedAttendee?.second_name || ""}? Esta acción no se puede deshacer.`}
+        description="¿Estás seguro de que deseas eliminar este asistente? Esta acción no se puede deshacer."
         confirmText="Eliminar"
         cancelText="Cancelar"
       />
@@ -529,5 +430,5 @@ function AttendeesPage() {
   )
 }
 
-export default AttendeesPage
+export default AsistentesPage
 
