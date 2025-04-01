@@ -5,7 +5,7 @@ import BasicDetails from "../components/BasicDetails"
 import PaymentSettings from "../components/PaymentSettings"
 import NotificationSettings from "../components/NotificationSettings"
 import OtherSettings from "../components/OtherSettings"
-import LocationSettings from "../components/LocationSettingS";
+import LocationSettings from "../components/LocationSettings";
 import SeoSettings from "../components/SeoSettings"
 import PrintError from "../utils/helpers"
 import { ArrowLeft } from "lucide-react";
