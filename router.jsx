@@ -1,12 +1,10 @@
 import { createBrowserRouter } from "react-router-dom"
 import DashboardLayout from "./src/layouts/DashboardLayout"
-import WelcomeLayout from "./src/layouts/WelcomeLayout"
 import AuthLayout from "./src/layouts/AuthLayout"
 import AdminLayout from "./src/layouts/AdminLayout"
 
 import Login from "./src/views/Login"
 import Register from "./src/views/Register"
-import Welcome from "./src/views/Welcome"
 import Events from "./src/views/Eventos"
 import GettingStarted from "./src/views/GettingStarted"
 import EventSettings from "./src/views/EventSettings"
@@ -28,10 +26,14 @@ import HomepageDesigner from "./src/views/HomepageDesigner"
 import GuestPage from "./src/views/GuestPage"
 import ProfilePage from "./src/views/ProfilePage"
 import Amenidades from "./src/views/Amenities"
-import CheckInPage from "./src/views/CheckInPage" // Nueva importación
+import CheckInPage from "./src/views/CheckInPage"
 import AmenitiesPage from "./src/views/AmenittiesPage"
 import ConfirmationPage from "./src/views/ConfirmationPage"
 import RifasPage from "./src/views/Rifas"
+import EventAttendee from "./src/views/EventAttendee"
+import AttendeeDetail from "./src/views/AttendeeDetail"
+import UsersPage from "./src/views/UsersPage"
+import RolesPage from "./src/views/RolesPage"
 
 const router = createBrowserRouter([
   {
@@ -66,16 +68,6 @@ const router = createBrowserRouter([
       {
         path: "order-confirmation/:orderId",
         element: <OrderConfirmation />,
-      },
-    ],
-  },
-  {
-    path: "/welcome",
-    element: <WelcomeLayout />,
-    children: [
-      {
-        index: true,
-        element: <Welcome />,
       },
     ],
   },
@@ -147,7 +139,6 @@ const router = createBrowserRouter([
         path: ":eventId/attendees",
         element: <AttendeesPage />,
       },
-      // Nueva ruta para el check-in de asistentes
       {
         path: ":eventId/check-in",
         element: <CheckInPage />,
@@ -155,6 +146,14 @@ const router = createBrowserRouter([
       {
         path: ":eventId/raffles",
         element: <RifasPage />,
+      },
+      {
+        path: ":eventId/users",
+        element: <UsersPage />,
+      },
+      {
+        path: ":eventId/roles",
+        element: <RolesPage />,
       },
     ],
   },
@@ -171,6 +170,15 @@ const router = createBrowserRouter([
         element: <Register />,
       },
     ],
+  },
+  // Nuevas rutas para la página de evento público y detalle de asistente
+  {
+    path: "/events/:eventId",
+    element: <EventAttendee />,
+  },
+  {
+    path: "/events/:eventId/attendee/:attendeeId",
+    element: <AttendeeDetail />,
   },
 ])
 

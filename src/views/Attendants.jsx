@@ -8,10 +8,10 @@ import { Button } from "../components/ui/button"
 import { Input } from "../components/ui/input"
 import { Badge } from "../components/ui/badge"
 import ConfirmDialog from "../components/confirm-dialog"
-import AgregarAsistenteModal from "../components/agregar-asistente-modal"
-import EditarAsistenteModal from "../components/editar-asistente-modal"
-import VerAmenidadesModal from "../components/ver-amenidades-modal"
-import QrCodeModal from "../components/qr-code-modal"
+import AgregarAsistenteModal from "../components/attendants/agregar-asistente-modal"
+import EditarAsistenteModal from "../components/attendants/editar-asistente-modal"
+import VerAmenidadesModal from "../components/attendants/ver-amenidades-modal"
+import QrCodeModal from "../components/attendants/qr-code-modal"
 
 const AsistentesPage = () => {
   const { eventId } = useParams()
@@ -385,6 +385,7 @@ const AsistentesPage = () => {
         onSave={handleAddAttendee}
         eventId={eventId}
         tickets={tickets}
+        supabase={supabase}
       />
 
       {/* Modal para editar asistente */}

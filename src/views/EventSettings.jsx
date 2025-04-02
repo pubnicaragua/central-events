@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import supabase from "../api/supabase"
-import BasicDetails from "../components/BasicDetails"
-import PaymentSettings from "../components/PaymentSettings"
-import NotificationSettings from "../components/NotificationSettings"
-import OtherSettings from "../components/OtherSettings"
-import LocationSettings from "../components/LocationSettings";
-import SeoSettings from "../components/SeoSettings"
+import BasicDetails from "../components/event-settings/BasicDetails"
+import PaymentSettings from "../components/event-settings/PaymentSettings"
+import NotificationSettings from "../components/event-settings/NotificationSettings"
+import OtherSettings from "../components/event-settings/OtherSettings"
+import LocationSettings from "../components/event-settings/LocationSettings";
+import SeoSettings from "../components/event-settings/SeoSettings"
 import PrintError from "../utils/helpers"
 import { ArrowLeft } from "lucide-react";
 

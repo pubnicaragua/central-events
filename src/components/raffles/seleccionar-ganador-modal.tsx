@@ -2,12 +2,12 @@
 
 import type React from "react"
 import { useState, useEffect } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../components/ui/dialog"
-import { Button } from "../components/ui/button"
-import { Input } from "../components/ui/input"
-import { Badge } from "../components/ui/badge"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../../components/ui/dialog"
+import { Button } from "../../components/ui/button"
+import { Input } from "../../components/ui/input"
+import { Badge } from "../../components/ui/badge"
 import { Search, Gift, Shuffle } from "lucide-react"
-import supabase from "../api/supabase"
+import supabase from "../../api/supabase"
 
 interface SeleccionarGanadorModalProps {
   isOpen: boolean
@@ -58,7 +58,7 @@ const SeleccionarGanadorModal: React.FC<SeleccionarGanadorModalProps> = ({
         .from("attendants")
         .select("id, name, second_name, email, code")
         .eq("event_id", eventId)
-        .eq("status", "confirmado") // Solo asistentes confirmados
+        .eq("checked_in", "true") // Solo asistentes confirmados
         .order("name", { ascending: true })
 
       if (error) throw error

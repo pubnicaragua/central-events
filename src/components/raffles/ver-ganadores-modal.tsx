@@ -1,11 +1,11 @@
 "use client"
 
 import type React from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../components/ui/dialog"
-import { Button } from "../components/ui/button"
-import { Badge } from "../components/ui/badge"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../../components/ui/dialog"
+import { Button } from "../../components/ui/button"
+import { Badge } from "../../components/ui/badge"
 import { Trash } from "lucide-react"
-import ConfirmDialog from "../components/confirm-dialog"
+import ConfirmDialog from "../../components/confirm-dialog"
 import { useState } from "react"
 
 interface VerGanadoresModalProps {

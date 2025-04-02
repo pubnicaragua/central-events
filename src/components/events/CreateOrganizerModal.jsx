@@ -1,9 +1,9 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { XIcon } from "./Icons"
-import supabase from "../api/supabase"
-import PropTypes from "prop-types";
+import { XIcon } from "../../components/Icons"
+import supabase from "../../api/supabase"
+import PropTypes from "prop-types"
 
 function CreateOrganizerModal({ onClose, onSubmit }) {
   const [currencies, setCurrencies] = useState([])
@@ -154,4 +154,5 @@ export default CreateOrganizerModal
 CreateOrganizerModal.propTypes = {
   onClose: PropTypes.func.isRequired,
   onSubmit: PropTypes.func.isRequired,
-};
+}
+

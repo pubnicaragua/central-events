@@ -9,11 +9,11 @@ import {
   DialogTitle,
   DialogFooter,
   DialogDescription,
-} from "../components/ui/dialog"
-import { Button } from "../components/ui/button"
-import { Label } from "../components/ui/label"
-import { Input } from "../components/ui/input"
-import { Textarea } from "../components/ui/textarea"
+} from "../../components/ui/dialog"
+import { Button } from "../../components/ui/button"
+import { Label } from "../../components/ui/label"
+import { Input } from "../../components/ui/input"
+import { Textarea } from "../../components/ui/textarea"
 
 interface AgregarAmenidadModalProps {
   isOpen: boolean

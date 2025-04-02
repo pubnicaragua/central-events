@@ -3,8 +3,8 @@
 import { useState, useEffect } from "react"
 import { useParams } from "react-router-dom"
 import supabase from "../api/supabase"
-import TicketList from "../components/TicketList"
-import CreateTicketModal from "../components/CreateTicketModal"
+import TicketList from "../components/tickets/TicketList"
+import CreateTicketModal from "../components/tickets/CreateTicketModal"
 import { PlusIcon } from "../components/Icons"
 
 function TicketsSettings() {

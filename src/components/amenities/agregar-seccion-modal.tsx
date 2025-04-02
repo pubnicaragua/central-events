@@ -1,29 +1,22 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../components/ui/dialog"
-import { Button } from "../components/ui/button"
-import { Label } from "../components/ui/label"
-import { Input } from "../components/ui/input"
+import { useState } from "react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../../components/ui/dialog"
+import { Button } from "../../components/ui/button"
+import { Label } from "../../components/ui/label"
+import { Input } from "../../components/ui/input"
 
-interface EditarSeccionModalProps {
+interface AgregarSeccionModalProps {
   isOpen: boolean
   onClose: () => void
   onSave: (data: { name: string }) => void
-  section: any
 }
 
-const EditarSeccionModal: React.FC<EditarSeccionModalProps> = ({ isOpen, onClose, onSave, section }) => {
+const AgregarSeccionModal: React.FC<AgregarSeccionModalProps> = ({ isOpen, onClose, onSave }) => {
   const [name, setName] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState("")
-
-  useEffect(() => {
-    if (section && isOpen) {
-      setName(section.name || "")
-    }
-  }, [section, isOpen])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -37,6 +30,7 @@ const EditarSeccionModal: React.FC<EditarSeccionModalProps> = ({ isOpen, onClose
     setIsSubmitting(true)
     try {
       onSave({ name })
+      setName("")
     } catch (error) {
       setError("Ocurrió un error al guardar la sección")
     } finally {
@@ -45,6 +39,7 @@ const EditarSeccionModal: React.FC<EditarSeccionModalProps> = ({ isOpen, onClose
   }
 
   const handleClose = () => {
+    setName("")
     setError("")
     onClose()
   }
@@ -53,7 +48,7 @@ const EditarSeccionModal: React.FC<EditarSeccionModalProps> = ({ isOpen, onClose
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Editar sección</DialogTitle>
+          <DialogTitle>Agregar nueva sección</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -73,7 +68,7 @@ const EditarSeccionModal: React.FC<EditarSeccionModalProps> = ({ isOpen, onClose
               Cancelar
             </Button>
             <Button type="submit" disabled={isSubmitting} className="bg-purple-600 hover:bg-purple-700">
-              {isSubmitting ? "Guardando..." : "Guardar cambios"}
+              {isSubmitting ? "Guardando..." : "Guardar sección"}
             </Button>
           </DialogFooter>
         </form>
@@ -82,5 +77,5 @@ const EditarSeccionModal: React.FC<EditarSeccionModalProps> = ({ isOpen, onClose
   )
 }
 
-export default EditarSeccionModal
+export default AgregarSeccionModal
 

@@ -8,10 +8,10 @@ import { Button } from "../components/ui/button"
 import { Input } from "../components/ui/input"
 import { Badge } from "../components/ui/badge"
 import ConfirmDialog from "../components/confirm-dialog"
-import AgregarRifaModal from "../components/agregar-rifa-modal"
-import EditarRifaModal from "../components/editar-rifa-modal"
-import SeleccionarGanadorModal from "../components/seleccionar-ganador-modal"
-import VerGanadoresModal from "../components/ver-ganadores-modal"
+import AgregarRifaModal from "../components/raffles/agregar-rifa-modal"
+import EditarRifaModal from "../components/raffles/editar-rifa-modal"
+import SeleccionarGanadorModal from "../components/raffles/seleccionar-ganador-modal"
+import VerGanadoresModal from "../components/raffles/ver-ganadores-modal"
 
 const RifasPage = () => {
     const { eventId } = useParams()

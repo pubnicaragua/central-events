@@ -1,13 +1,14 @@
 import { Outlet } from "react-router-dom"
-//IMPORTANDO SIDEBAR
-import Sidebar from "../components/sidebar"
+import  Sidebar  from "../components/sidebar"
+import { MobileMenu } from "../components/MobileMenu"
 
-export default function DashboardLayout() {
+function DashboardLayout () {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="grid min-h-screen lg:grid-cols-[280px_1fr]">
-        <Sidebar />
-        <main className="flex flex-col">
+    <div className="flex min-h-screen">
+      <Sidebar />
+      <MobileMenu />
+      <div className="flex-1">
+        <main className="flex-1 p-4 md:p-6">
           <Outlet />
         </main>
       </div>
@@ -15,3 +16,4 @@ export default function DashboardLayout() {
   )
 }
 
+export default DashboardLayout
