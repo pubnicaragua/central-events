@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useParams, useNavigate } from "react-router-dom"
+import { useParams, useNavigate, useSearchParams } from "react-router-dom"
 import supabase from "../api/supabase"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
@@ -22,7 +22,35 @@ const EventAttendee = () => {
     const [error, setError] = useState("")
     const [location, setLocation] = useState(null)
     const [organizer, setOrganizer] = useState(null)
-    const googleMapsApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "AIzaSyC-BA-7oTyLAxz4dXapvVLM3SdK5KdZVcQ"
+    const [searchParams] = useSearchParams()
+    const googleMapsApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY
+
+    const attendeeIdFromQuery = searchParams.get("attendeeId")
+
+    useEffect(() => {
+        const checkAttendeeStatus = async () => {
+            if (!attendeeIdFromQuery) return
+
+            const { data, error } = await supabase
+                .from("attendants")
+                .select("checked_in")
+                .eq("id", attendeeIdFromQuery)
+                .eq("event_id", eventId)
+                .single()
+
+            if (error) {
+                console.error("Error al verificar el asistente:", error)
+                return
+            }
+
+            if (data?.checked_in) {
+                navigate(`/events/${eventId}/attendee/${attendeeIdFromQuery}`)
+            }
+        }
+
+        checkAttendeeStatus()
+    }, [attendeeIdFromQuery, eventId, navigate])
+
 
     useEffect(() => {
         const fetchEventData = async () => {

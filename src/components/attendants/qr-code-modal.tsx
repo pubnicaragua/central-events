@@ -1,13 +1,14 @@
 "use client"
 
 import type React from "react"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../../components/ui/dialog"
 import { Button } from "../../components/ui/button"
 import { Mail, Loader2, Check, AlertCircle } from 'lucide-react'
 import { Alert, AlertDescription } from "../../components/ui/alert"
 // Importar EmailJS
 import emailjs from "@emailjs/browser"
+import QRCode from "qrcode"
 
 interface QrCodeModalProps {
   isOpen: boolean
@@ -26,47 +27,39 @@ const QrCodeModal: React.FC<QrCodeModalProps> = ({ isOpen, onClose, attendee, ev
   // Enviar correo con EmailJS
   const handleSendEmail = async () => {
     if (!attendee.email) {
-      setEmailStatus({
-        type: "error",
-        message: "El asistente no tiene un correo electrónico registrado.",
-      })
+      setEmailStatus({ type: "error", message: "El asistente no tiene un correo electrónico registrado." })
       return
     }
 
     try {
       setIsSending(true)
       setEmailStatus({ type: null, message: null })
+      const attendeeLink = `http://localhost:5173/events/${eventId || attendee.event_id}?attendeeId=${attendee.id}`
 
-      // Crear enlace para el asistente
-      const attendeeLink = `http://localhost:5173/events/${eventId || attendee.event_id}`
+      const qrPayload = {
+        attendeeId: attendee.id,
+        eventId: String(eventId || attendee.event_id),
+        code: attendee.code,
+        name: `${attendee.name} ${attendee.second_name || ""}`.trim(),
+      }
 
-      // Preparar los datos para el correo
+      const qrDataUrl = await QRCode.toDataURL(JSON.stringify(qrPayload))
+
       const templateParams = {
         to_email: attendee.email,
         to_name: `${attendee.name} ${attendee.second_name || ""}`.trim(),
         attendee_code: attendee.code,
         event_link: attendeeLink,
-        event_name: "Tu Evento", // Puedes obtener esto de algún contexto o prop
+        qr_image: qrDataUrl, // el QR con JSON embebido
       }
 
-      // Enviar correo con EmailJS
-      await emailjs.send(
-        "service_ckfmlwl", // Reemplaza con tu Service ID
-        "template_20jh7dj", // Reemplaza con tu Template ID
-        templateParams,
-        "pIiR9nD5kGdXBVnp7", // Reemplaza con tu clave pública de EmailJS
-      )
 
-      setEmailStatus({
-        type: "success",
-        message: "Correo enviado exitosamente a " + attendee.email,
-      })
+      await emailjs.send("service_ckfmlwl", "template_20jh7dj", templateParams, "pIiR9nD5kGdXBVnp7")
+
+      setEmailStatus({ type: "success", message: "Correo enviado exitosamente a " + attendee.email })
     } catch (error) {
       console.error("Error al enviar el correo:", error)
-      setEmailStatus({
-        type: "error",
-        message: error instanceof Error ? error.message : "Error al enviar el correo",
-      })
+      setEmailStatus({ type: "error", message: error instanceof Error ? error.message : "Error al enviar el correo" })
     } finally {
       setIsSending(false)
     }

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { XIcon } from "../../components/Icons"
+import { X, Calendar, User, Clock, FileText, Loader } from "lucide-react"
 import PropTypes from "prop-types"
 import supabase from "../../api/supabase"
 
@@ -145,32 +145,39 @@ function CreateEventModal({ onClose, onSubmit }) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-        <div className="flex justify-between items-center p-6 border-b">
-          <h2 className="text-2xl font-bold text-gray-800">Crear evento</h2>
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-white rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-emerald-100">
+        <div className="flex justify-between items-center p-6 border-b border-emerald-100 bg-emerald-50">
+          <h2 className="text-2xl font-bold text-emerald-900 flex items-center">
+            <Calendar className="w-6 h-6 mr-3 text-emerald-700" />
+            Crear evento
+          </h2>
           <button
             onClick={onClose}
-            className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+            className="p-2 rounded-full hover:bg-emerald-100 transition-colors text-emerald-700"
             aria-label="Cerrar"
           >
-            <XIcon className="w-6 h-6 text-gray-500" />
+            <X className="w-6 h-6" />
           </button>
         </div>
 
-        {error && <div className="mx-6 mt-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg">{error}</div>}
+        {error && (
+          <div className="mx-6 mt-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg shadow-sm">{error}</div>
+        )}
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Organizador <span className="text-red-500">*</span>
+            <label className="block text-sm font-medium text-emerald-800 mb-2 flex items-center">
+              <User className="w-4 h-4 mr-2 text-emerald-600" />
+              Organizador <span className="text-red-500 ml-1">*</span>
             </label>
             <div className="relative">
               <select
                 name="organizer_id"
                 value={formData.organizer_id}
                 onChange={handleChange}
-                className={`w-full p-3 border ${formErrors.organizer_id ? "border-red-500" : "border-gray-300"} rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all`}
+                className={`w-full p-3 border ${formErrors.organizer_id ? "border-red-500" : "border-emerald-200"
+                  } rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all bg-white shadow-sm`}
                 required
                 disabled={loading}
               >
@@ -182,14 +189,18 @@ function CreateEventModal({ onClose, onSubmit }) {
                 ))}
               </select>
             </div>
-            {loading && <p className="text-sm text-gray-500 mt-1">Cargando organizadores...</p>}
+            {loading && (
+              <p className="text-sm text-emerald-600 mt-2 flex items-center">
+                <span className="animate-pulse mr-2">●</span> Cargando organizadores...
+              </p>
+            )}
             {!loading && organizers.length === 0 && !error && (
-              <p className="text-sm text-amber-600 mt-1">
+              <p className="text-sm text-amber-600 mt-2">
                 No se encontraron organizadores.
                 <button
                   type="button"
                   onClick={retryLoadOrganizers}
-                  className="ml-2 text-blue-600 hover:text-blue-800 underline"
+                  className="ml-2 text-emerald-600 hover:text-emerald-800 underline"
                 >
                   Reintentar
                 </button>
@@ -199,8 +210,9 @@ function CreateEventModal({ onClose, onSubmit }) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Nombre del evento <span className="text-red-500">*</span>
+            <label className="block text-sm font-medium text-emerald-800 mb-2 flex items-center">
+              <Calendar className="w-4 h-4 mr-2 text-emerald-600" />
+              Nombre del evento <span className="text-red-500 ml-1">*</span>
             </label>
             <input
               type="text"
@@ -208,49 +220,57 @@ function CreateEventModal({ onClose, onSubmit }) {
               value={formData.name}
               onChange={handleChange}
               placeholder="Ej: Conferencia Anual 2025"
-              className={`w-full p-3 border ${formErrors.name ? "border-red-500" : "border-gray-300"} rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all`}
+              className={`w-full p-3 border ${formErrors.name ? "border-red-500" : "border-emerald-200"
+                } rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all bg-white shadow-sm`}
               required
             />
             {formErrors.name && <p className="text-sm text-red-600 mt-1">{formErrors.name}</p>}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
+            <label className="block text-sm font-medium text-emerald-800 mb-2 flex items-center">
+              <FileText className="w-4 h-4 mr-2 text-emerald-600" />
+              Descripción
+            </label>
             <textarea
               name="description"
               value={formData.description}
               onChange={handleChange}
               placeholder="Describe tu evento..."
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all min-h-[120px] resize-y"
+              className="w-full p-3 border border-emerald-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all min-h-[120px] resize-y bg-white shadow-sm"
             />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Fecha de inicio <span className="text-red-500">*</span>
+              <label className="block text-sm font-medium text-emerald-800 mb-2 flex items-center">
+                <Clock className="w-4 h-4 mr-2 text-emerald-600" />
+                Fecha de inicio <span className="text-red-500 ml-1">*</span>
               </label>
               <input
                 type="datetime-local"
                 name="start_date"
                 value={formData.start_date}
                 onChange={handleChange}
-                className={`w-full p-3 border ${formErrors.start_date ? "border-red-500" : "border-gray-300"} rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all`}
+                className={`w-full p-3 border ${formErrors.start_date ? "border-red-500" : "border-emerald-200"
+                  } rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all bg-white shadow-sm`}
                 required
               />
               {formErrors.start_date && <p className="text-sm text-red-600 mt-1">{formErrors.start_date}</p>}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Fecha final <span className="text-red-500">*</span>
+              <label className="block text-sm font-medium text-emerald-800 mb-2 flex items-center">
+                <Clock className="w-4 h-4 mr-2 text-emerald-600" />
+                Fecha final <span className="text-red-500 ml-1">*</span>
               </label>
               <input
                 type="datetime-local"
                 name="end_date"
                 value={formData.end_date}
                 onChange={handleChange}
-                className={`w-full p-3 border ${formErrors.end_date ? "border-red-500" : "border-gray-300"} rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all`}
+                className={`w-full p-3 border ${formErrors.end_date ? "border-red-500" : "border-emerald-200"
+                  } rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all bg-white shadow-sm`}
                 required
               />
               {formErrors.end_date && <p className="text-sm text-red-600 mt-1">{formErrors.end_date}</p>}
@@ -260,10 +280,17 @@ function CreateEventModal({ onClose, onSubmit }) {
           <div className="pt-4">
             <button
               type="submit"
-              className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors font-medium text-base disabled:bg-blue-400 disabled:cursor-not-allowed"
+              className="w-full bg-emerald-800 text-white py-3 px-4 rounded-lg hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition-colors font-medium text-base disabled:bg-emerald-400 disabled:cursor-not-allowed shadow-md"
               disabled={submitting || loading}
             >
-              {submitting ? "Creando evento..." : "Continuar configuración del evento"}
+              {submitting ? (
+                <span className="flex items-center justify-center">
+                  <Loader className="animate-spin h-5 w-5 mr-3" />
+                  Creando evento...
+                </span>
+              ) : (
+                "Continuar configuración del evento"
+              )}
             </button>
           </div>
         </form>

@@ -14,9 +14,6 @@ import QuestionsPage from "./src/views/QuestionsPage"
 import PromoCodes from "./src/views/PromoCodes"
 import DashboardPage from "./src/views/dashboard/page"
 import Home from "./src/views/Home"
-import EventDetail from "./src/views/EventDetail"
-import Checkout from "./src/views/Checkout"
-import OrderConfirmation from "./src/views/OrderConfirmation"
 import AttendeesPage from "./src/views/Attendants"
 import OrdersPage from "./src/views/OrdersPage"
 import Messages from "./src/views/Messages"
@@ -27,13 +24,12 @@ import GuestPage from "./src/views/GuestPage"
 import ProfilePage from "./src/views/ProfilePage"
 import Amenidades from "./src/views/Amenities"
 import CheckInPage from "./src/views/CheckInPage"
-import AmenitiesPage from "./src/views/AmenittiesPage"
-import ConfirmationPage from "./src/views/ConfirmationPage"
 import RifasPage from "./src/views/Rifas"
 import EventAttendee from "./src/views/EventAttendee"
 import AttendeeDetail from "./src/views/AttendeeDetail"
 import UsersPage from "./src/views/UsersPage"
 import RolesPage from "./src/views/RolesPage"
+import Notifications from "./src/views/Notifications"
 
 const router = createBrowserRouter([
   {
@@ -41,33 +37,24 @@ const router = createBrowserRouter([
     element: <AdminLayout />,
     children: [
       {
-        index: true,
+        path: "admin/events",
         element: <Events />,
       },
       {
         path: "admin/profile",
         element: <ProfilePage />,
       },
-      // Rutas públicas
       {
-        path: "event/:eventId",
-        element: <EventDetail />,
+        path: "admin/users",
+        element: <UsersPage />,
       },
       {
-        path: "checkout/:eventId/:ticketId",
-        element: <Checkout />,
+        path: "admin/roles",
+        element: <RolesPage />,
       },
       {
-        path: "amenities/:eventId/:ticketId",
-        element: <AmenitiesPage />,
-      },
-      {
-        path: "confirm/:eventId/:ticketId",
-        element: <ConfirmationPage />,
-      },
-      {
-        path: "order-confirmation/:orderId",
-        element: <OrderConfirmation />,
+        path: "admin/notifications",
+        element: <Notifications />,
       },
     ],
   },
@@ -146,14 +133,6 @@ const router = createBrowserRouter([
       {
         path: ":eventId/raffles",
         element: <RifasPage />,
-      },
-      {
-        path: ":eventId/users",
-        element: <UsersPage />,
-      },
-      {
-        path: ":eventId/roles",
-        element: <RolesPage />,
       },
     ],
   },

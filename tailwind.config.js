@@ -52,6 +52,13 @@ export default {
           4: "hsl(var(--chart-4))",
           5: "hsl(var(--chart-5))",
         },
+        sidebar: {
+          bg: "#064e3b", // emerald-900 equivalente
+          active: "#022c22", // emerald-950 equivalente
+          hover: "#065f46", // emerald-800 equivalente
+          text: "#ecfdf5", // emerald-50 equivalente
+          border: "#047857", // emerald-700 equivalente
+        },
       },
     },
   },

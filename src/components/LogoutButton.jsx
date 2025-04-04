@@ -31,7 +31,7 @@ export default function LogoutButton({ className = "", asMenuItem = true }) {
             <button
                 onClick={handleLogout}
                 disabled={isLoading}
-                className={`w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 flex items-center ${className}`}
+                className={`w-full text-left px-4 py-2 text-sm text-white flex items-center ${className}`}
             >
                 <svg
                     xmlns="http://www.w3.org/2000/svg"

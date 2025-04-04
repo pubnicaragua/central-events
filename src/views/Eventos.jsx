@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
+import { Plus, Search, Calendar, Loader } from "lucide-react"
 import supabase from "../api/supabase"
 import EventCard from "../components/events/EventCard"
 import CreateEventModal from "../components/events/CreateEventModal"
-import { PlusIcon } from "../components/Icons"
 
 function Events() {
   const [events, setEvents] = useState([])
@@ -106,7 +106,6 @@ function Events() {
         start_date: event.start_date,
         end_date: event.end_date,
         status: event.status,
-        user_id: userId,
       }
 
       const { error } = await supabase.from("events").insert([duplicatedEvent]).select()
@@ -146,13 +145,25 @@ function Events() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-emerald-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-2xl font-bold mb-6 text-gray-800">Eventos</h2>
+        <div className="bg-white rounded-xl shadow-lg p-6 border border-emerald-100">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-2xl font-bold text-emerald-900 flex items-center">
+              <Calendar className="w-7 h-7 mr-3 text-emerald-700" />
+              Eventos
+            </h2>
+            <button
+              className="bg-emerald-800 text-white px-5 py-2.5 rounded-lg flex items-center justify-center hover:bg-emerald-700 transition-colors shadow-md"
+              onClick={() => setShowCreateEventModal(true)}
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              Crear Evento
+            </button>
+          </div>
 
           {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg flex justify-between items-center">
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg flex justify-between items-center shadow-sm">
               <p>{error}</p>
               <button
                 onClick={handleRetry}
@@ -165,16 +176,21 @@ function Events() {
 
           <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
             <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
-              <input
-                type="text"
-                placeholder="Buscar por nombre del evento"
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full md:w-64"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Search className="h-5 w-5 text-emerald-500" />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Buscar por nombre del evento"
+                  className="pl-10 px-4 py-2.5 border border-emerald-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 w-full md:w-64 bg-white shadow-sm"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
 
               <select
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="px-4 py-2.5 border border-emerald-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white shadow-sm text-emerald-900"
                 value={sortOrder}
                 onChange={(e) => setSortOrder(e.target.value)}
               >
@@ -182,26 +198,17 @@ function Events() {
                 <option value="oldest">Fecha de inicio más antigua</option>
               </select>
             </div>
-
-            <button
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center justify-center hover:bg-blue-700 transition-colors"
-              onClick={() => setShowCreateEventModal(true)}
-            >
-              <PlusIcon className="w-5 h-5 mr-2" />
-              Crear Evento
-            </button>
           </div>
 
-          <div className="border-b border-gray-200 mb-6">
+          <div className="border-b border-emerald-200 mb-6">
             <nav className="-mb-px flex space-x-8">
               {["Próximo", "Terminado", "Archivado"].map((tab) => (
                 <button
                   key={tab}
-                  className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                    activeTab === tab
-                      ? "border-blue-500 text-blue-600"
-                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                  }`}
+                  className={`py-4 px-1 border-b-2 font-medium text-sm transition-all ${activeTab === tab
+                    ? "border-emerald-600 text-emerald-800"
+                    : "border-transparent text-gray-500 hover:text-emerald-700 hover:border-emerald-300"
+                    }`}
                   onClick={() => setActiveTab(tab)}
                 >
                   {tab}
@@ -212,8 +219,9 @@ function Events() {
 
           <div className="space-y-4">
             {loading ? (
-              <div className="text-center py-12">
-                <p className="text-gray-500">Cargando eventos...</p>
+              <div className="text-center py-16">
+                <Loader className="h-12 w-12 animate-spin text-emerald-700 mx-auto mb-4" />
+                <p className="text-emerald-800">Cargando eventos...</p>
               </div>
             ) : filteredEvents.length > 0 ? (
               filteredEvents.map((event) => (
@@ -225,11 +233,12 @@ function Events() {
                 />
               ))
             ) : (
-              <div className="text-center py-12 bg-gray-50 rounded-lg">
-                <p className="text-gray-500 mb-4">No hay eventos para mostrar</p>
+              <div className="text-center py-16 bg-emerald-50 rounded-xl border border-emerald-100">
+                <Calendar className="w-16 h-16 text-emerald-300 mx-auto mb-4" />
+                <p className="text-emerald-700 mb-4">No hay eventos para mostrar</p>
                 <button
                   onClick={() => setShowCreateEventModal(true)}
-                  className="text-blue-600 hover:text-blue-800 font-medium"
+                  className="text-emerald-700 hover:text-emerald-900 font-medium bg-white px-5 py-2 rounded-lg shadow-sm border border-emerald-200 hover:bg-emerald-50 transition-colors"
                 >
                   Crear tu primer evento
                 </button>

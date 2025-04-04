@@ -1,31 +1,16 @@
 "use client"
 
 import { Outlet } from "react-router-dom"
-import NotificationBell from "../components/NotificationBell"
-import UserProfileMenu from "../components/UserProfileMenu"
+import Sidebar from "../components/AdminSidebar"
 
 function AdminLayout() {
     return (
-        <div className="bg-gray-100">
-            <div className="max-w-7xl mx-auto px-4 my-10">
-                <div className="flex items-center justify-between mb-8 h-16">
-                    <div className="flex items-center">
-                        <div className="flex flex-col">
-                            <h1 className="ml-4 text-4xl font-semibold text-gray-900">Panel de Administrador</h1>
-                            <p className="ml-4 font-semibold text-gray-900">PassK</p>
-                        </div>
-                    </div>
-
-                    <div className="flex items-center space-x-4">
-                        <NotificationBell />
-
-                        <UserProfileMenu />
-                    </div>
-                </div>
-
-                <div className="py-6">
+        <div className="flex min-h-screen">
+            <Sidebar />
+            <div className="flex-1">
+                <main className="flex-1 p-4 md:p-6 bg-emerald-50">
                     <Outlet />
-                </div>
+                </main>
             </div>
         </div>
     )
