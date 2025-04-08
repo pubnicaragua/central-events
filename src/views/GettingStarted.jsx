@@ -12,7 +12,7 @@ export default function GettingStarted() {
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8">
       <div className="flex items-center gap-4 text-sm text-gray-600">
-        <Link to="/">Eventos</Link>
+        <Link to="/admin/events">Eventos</Link>
         <ChevronRight className="h-4 w-4" />
         <Link to={`/manage/event/${eventId}/getting-started`}>{eventName}</Link>
       </div>
