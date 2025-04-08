@@ -81,3 +81,16 @@ export async function updateEvent(eventId, updatedFields) {
     throw error
   }
 }
+
+// Añadir esta nueva función para obtener el diseño de la página de detalles del asistente
+export async function getAttendeePageDesign(eventId) {
+  try {
+    const { data, error } = await supabase.from("homepage_design").select("*").eq("event_id", eventId).single()
+
+    if (error && error.code !== "PGRST116") throw error
+    return data
+  } catch (error) {
+    console.error("Error fetching attendee page design:", error)
+    throw error
+  }
+}

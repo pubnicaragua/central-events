@@ -1,51 +1,43 @@
 import supabase from "../../../api/supabase"
 
-/**
- * Obtiene el diseño de la página de inicio de un evento
- * @param {string} eventId - ID del evento
- * @returns {Promise<Object>} Diseño de la página
- */
-export async function getHomepageDesign(eventId) {
-    const { data, error } = await supabase.from("homepage_design").select("*").eq("event_id", eventId).single()
+// Función para obtener la configuración de diseño para la página del asistente
+async function getAttendeePageDesign(eventId) {
+  try {
+    if (!eventId) return null
 
-    if (error) throw error
-    return data
-}
+    // Buscar la configuración de tema para este evento
+    const { data, error } = await supabase.from("theme_configs").select("*").eq("event_id", eventId).maybeSingle()
 
-/**
- * Actualiza el diseño de la página de inicio
- * @param {string} eventId - ID del evento
- * @param {Object} designData - Datos del diseño
- * @returns {Promise<Object>} Diseño actualizado
- */
-export async function updateHomepageDesign(eventId, designData) {
-    const { data: existing } = await supabase.from("homepage_design").select("id").eq("event_id", eventId).single()
-
-    if (existing) {
-        const { data, error } = await supabase
-            .from("homepage_design")
-            .update({
-                ...designData,
-                updated_at: new Date().toISOString(),
-            })
-            .eq("event_id", eventId)
-            .select()
-
-        if (error) throw error
-        return data[0]
-    } else {
-        const { data, error } = await supabase
-            .from("homepage_design")
-            .insert([
-                {
-                    event_id: eventId,
-                    ...designData,
-                },
-            ])
-            .select()
-
-        if (error) throw error
-        return data[0]
+    if (error) {
+      console.error("Error al obtener la configuración de diseño:", error)
+      return null
     }
+
+    // Si no hay configuración, devolver null
+    if (!data) return null
+
+    // Convertir los datos de la base de datos al formato que usa nuestra aplicación
+    return {
+      id: data.id,
+      name: data.name,
+      headerBg: data.header_bg,
+      pageBg: data.page_bg,
+      cardBg: data.card_bg,
+      primaryText: data.primary_text,
+      secondaryText: data.secondary_text,
+      accentColor: data.accent_color,
+      borderColor: data.border_color,
+      iconColor: data.icon_color,
+      headerImageUrl: data.header_image_url,
+      qrModuleColor: data.qr_module_color,
+      qrBackgroundColor: data.qr_background_color,
+      event_id: data.event_id,
+    }
+  } catch (error) {
+    console.error("Error al obtener la configuración de diseño:", error)
+    return null
+  }
 }
+
+export default getAttendeePageDesign
 
