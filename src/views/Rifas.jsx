@@ -120,37 +120,53 @@ const RifasPage = () => {
         }
     }
 
-    // Seleccionar ganador
     const handleSelectWinner = async (attendeeId) => {
         try {
-            // Verificar si el asistente ya es ganador de esta rifa
+            // 1️⃣ Obtener todas las rifas del evento actual
+            const { data: allRaffles, error: rafflesError } = await supabase
+                .from("raffles")
+                .select("id")
+                .eq("event_id", eventId)
+
+            if (rafflesError) throw rafflesError
+
+            const raffleIds = allRaffles.map((r) => r.id)
+
+            if (!raffleIds.length) {
+                alert("No hay rifas activas para este evento.")
+                return
+            }
+
+            // 2️⃣ Verificar si el asistente ya ganó alguna rifa de este evento
             const { data: existingWinner, error: checkError } = await supabase
                 .from("raffle_winner")
-                .select("*")
-                .eq("raffle_id", selectedRaffle.id)
+                .select("raffle_id, attendee_id")
                 .eq("attendee_id", attendeeId)
+                .in("raffle_id", raffleIds)
 
             if (checkError) throw checkError
 
             if (existingWinner && existingWinner.length > 0) {
-                alert("Este asistente ya es ganador de esta rifa.")
+                alert("Este asistente ya ha ganado una rifa en este evento.")
                 return
             }
 
-            // Registrar al ganador
-            const { error } = await supabase.from("raffle_winner").insert({
+            // 3️⃣ Registrar al ganador
+            const { error: insertError } = await supabase.from("raffle_winner").insert({
                 raffle_id: selectedRaffle.id,
                 attendee_id: attendeeId,
             })
 
-            if (error) throw error
+            if (insertError) throw insertError
 
             setSeleccionarGanadorModalOpen(false)
             await fetchRaffles()
         } catch (error) {
             console.error("Error al seleccionar ganador:", error)
+            alert("Hubo un error al seleccionar el ganador.")
         }
     }
+
 
     // Cargar ganadores de una rifa
     const handleViewWinners = async (raffle) => {

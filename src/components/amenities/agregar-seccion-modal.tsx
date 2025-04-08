@@ -67,7 +67,7 @@ const AgregarSeccionModal: React.FC<AgregarSeccionModalProps> = ({ isOpen, onClo
             <Button type="button" variant="outline" onClick={handleClose} disabled={isSubmitting}>
               Cancelar
             </Button>
-            <Button type="submit" disabled={isSubmitting} className="bg-purple-600 hover:bg-purple-700">
+            <Button type="submit" disabled={isSubmitting} className="bg-green-600 hover:bg-green-700">
               {isSubmitting ? "Guardando..." : "Guardar sección"}
             </Button>
           </DialogFooter>

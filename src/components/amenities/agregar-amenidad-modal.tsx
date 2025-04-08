@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   Dialog,
   DialogContent,
@@ -14,38 +14,86 @@ import { Button } from "../../components/ui/button"
 import { Label } from "../../components/ui/label"
 import { Input } from "../../components/ui/input"
 import { Textarea } from "../../components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select"
+import supabase from "../../api/supabase"
 
 interface AgregarAmenidadModalProps {
   isOpen: boolean
   onClose: () => void
-  onSave: (data: { name: string; description: string; price: number; quantity: number }) => void
+  onSave: (data: { name: string; description: string; quantity: number; user_id: string | null }) => void
   sectionName?: string
+  eventId: string
 }
 
-const AgregarAmenidadModal: React.FC<AgregarAmenidadModalProps> = ({ isOpen, onClose, onSave, sectionName }) => {
+const AgregarAmenidadModal: React.FC<AgregarAmenidadModalProps> = ({
+  isOpen,
+  onClose,
+  onSave,
+  sectionName,
+  eventId,
+}) => {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    price: "",
     quantity: "",
+    user_id: "",
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [roles, setRoles] = useState([])
+  const [employees, setEmployees] = useState([])
+
+  // Cargar empleados cuando se abre el modal
+  useEffect(() => {
+    const fetchEmployeesWithRoles = async () => {
+      try {
+        const { data: rolesData, error: rolesError } = await supabase
+          .from("user_roles")
+          .select("*")
+          .eq("role_id", 4)
+
+        if (rolesError) throw rolesError
+        setRoles(rolesData)
+
+        const userIds = rolesData.map((r) => r.user_id)
+
+        if (userIds.length > 0) {
+          const { data: users, error: usersError } = await supabase
+            .from("user_profile")
+            .select("*")
+            .in("auth_id", userIds)
+
+          if (usersError) throw usersError
+
+          setEmployees(users)
+        }
+      } catch (error) {
+        console.error("Error al cargar empleados:", error)
+      }
+    }
+
+    if (isOpen) fetchEmployeesWithRoles()
+  }, [isOpen])
+
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
+  const handleSelectChange = (value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      user_id: value === "none" ? "" : value,
+    }))
+  }
+
+
   const validate = () => {
     const newErrors: Record<string, string> = {}
 
     if (!formData.name.trim()) {
       newErrors.name = "El nombre es obligatorio"
-    }
-
-    if (formData.price && isNaN(Number(formData.price))) {
-      newErrors.price = "El precio debe ser un número"
     }
 
     if (formData.quantity && isNaN(Number(formData.quantity))) {
@@ -66,16 +114,16 @@ const AgregarAmenidadModal: React.FC<AgregarAmenidadModalProps> = ({ isOpen, onC
       onSave({
         name: formData.name,
         description: formData.description,
-        price: formData.price ? Number(formData.price) : 0,
         quantity: formData.quantity ? Number(formData.quantity) : 0,
+        user_id: formData.user_id || null,
       })
 
       // Limpiar formulario
       setFormData({
         name: "",
         description: "",
-        price: "",
         quantity: "",
+        user_id: "",
       })
     } catch (error) {
       console.error("Error al guardar la amenidad:", error)
@@ -89,8 +137,8 @@ const AgregarAmenidadModal: React.FC<AgregarAmenidadModalProps> = ({ isOpen, onC
     setFormData({
       name: "",
       description: "",
-      price: "",
       quantity: "",
+      user_id: "",
     })
     setErrors({})
     onClose()
@@ -136,21 +184,6 @@ const AgregarAmenidadModal: React.FC<AgregarAmenidadModalProps> = ({ isOpen, onC
           </div>
 
           <div>
-            <Label htmlFor="price">Precio</Label>
-            <Input
-              id="price"
-              name="price"
-              type="number"
-              step="0.01"
-              value={formData.price}
-              onChange={handleChange}
-              placeholder="0.00"
-              className={errors.price ? "border-red-500" : ""}
-            />
-            {errors.price && <p className="text-red-500 text-sm mt-1">{errors.price}</p>}
-          </div>
-
-          <div>
             <Label htmlFor="quantity">Cantidad</Label>
             <Input
               id="quantity"
@@ -162,6 +195,23 @@ const AgregarAmenidadModal: React.FC<AgregarAmenidadModalProps> = ({ isOpen, onC
               className={errors.quantity ? "border-red-500" : ""}
             />
             {errors.quantity && <p className="text-red-500 text-sm mt-1">{errors.quantity}</p>}
+          </div>
+
+          <div>
+            <Label htmlFor="user_id">Empleado asignado</Label>
+            <Select value={formData.user_id} onValueChange={handleSelectChange}>
+              <SelectTrigger>
+                <SelectValue placeholder="Seleccionar empleado (opcional)" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Ninguno</SelectItem>
+                {employees.map((employee) => (
+                  <SelectItem key={employee.auth_id} value={String(employee.auth_id)}>
+                    {`${employee.name} ${employee.second_name} (${employee.email})`}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <DialogFooter>

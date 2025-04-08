@@ -7,22 +7,32 @@ import { Button } from "../../components/ui/button"
 import { Label } from "../../components/ui/label"
 import { Input } from "../../components/ui/input"
 import { Textarea } from "../../components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select"
+import supabase from "../../api/supabase"
 
 interface EditarAmenidadModalProps {
   isOpen: boolean
   onClose: () => void
-  onSave: (data: { name: string; description: string; quantity: number }) => void
+  onSave: (data: { name: string; description: string; quantity: number; user_id: string | null }) => void
   amenidad: any
+  eventId?: string
 }
 
-const EditarAmenidadModal: React.FC<EditarAmenidadModalProps> = ({ isOpen, onClose, onSave, amenidad }) => {
+const EditarAmenidadModal: React.FC<EditarAmenidadModalProps> = ({ isOpen, onClose, onSave, amenidad, eventId }) => {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     quantity: "",
+    user_id: "",
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [roles, setRoles] = useState([])
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [employees, setEmployees] = useState<Array<{ id: string; email: string; name?: string; second_name?: string }>>(
+    [],
+  )
+
+  // Cargar empleados cuando se abre el modal
 
   useEffect(() => {
     if (amenidad && isOpen) {
@@ -30,13 +40,46 @@ const EditarAmenidadModal: React.FC<EditarAmenidadModalProps> = ({ isOpen, onClo
         name: amenidad.name || "",
         description: amenidad.description || "",
         quantity: amenidad.quantity ? String(amenidad.quantity) : "",
+        user_id: amenidad.user_id || "",
       })
     }
   }, [amenidad, isOpen])
 
+  useEffect(() => {
+    const fetchEmployeesWithRoles = async () => {
+      try {
+        const { data: rolesData, error: rolesError } = await supabase.from("user_roles").select("*").eq("role_id", 4)
+
+        if (rolesError) throw rolesError
+        setRoles(rolesData)
+
+        const userIds = rolesData.map((r) => r.user_id)
+
+        if (userIds.length > 0) {
+          const { data: users, error: usersError } = await supabase
+            .from("user_profile")
+            .select("*")
+            .in("auth_id", userIds)
+
+          if (usersError) throw usersError
+
+          setEmployees(users)
+        }
+      } catch (error) {
+        console.error("Error al cargar empleados:", error)
+      }
+    }
+
+    if (isOpen) fetchEmployeesWithRoles()
+  }, [isOpen])
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const handleSelectChange = (value: string) => {
+    setFormData((prev) => ({ ...prev, user_id: value }))
   }
 
   const validate = () => {
@@ -54,6 +97,14 @@ const EditarAmenidadModal: React.FC<EditarAmenidadModalProps> = ({ isOpen, onClo
     return Object.keys(newErrors).length === 0
   }
 
+  // Función para mostrar el nombre o email del empleado
+  const getEmployeeDisplay = (employee: any) => {
+    if (employee.name) {
+      return `${employee.name} ${employee.second_name || ""} (${employee.email})`
+    }
+    return employee.email
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -65,6 +116,7 @@ const EditarAmenidadModal: React.FC<EditarAmenidadModalProps> = ({ isOpen, onClo
         name: formData.name,
         description: formData.description,
         quantity: formData.quantity ? Number(formData.quantity) : 0,
+        user_id: formData.user_id === "none" ? null : formData.user_id,
       })
     } catch (error) {
       console.error("Error al guardar la amenidad:", error)
@@ -124,6 +176,23 @@ const EditarAmenidadModal: React.FC<EditarAmenidadModalProps> = ({ isOpen, onClo
               className={errors.quantity ? "border-red-500" : ""}
             />
             {errors.quantity && <p className="text-red-500 text-sm mt-1">{errors.quantity}</p>}
+          </div>
+
+          <div>
+            <Label htmlFor="user_id">Empleado asignado</Label>
+            <Select value={formData.user_id} onValueChange={handleSelectChange}>
+              <SelectTrigger>
+                <SelectValue placeholder="Seleccionar empleado (opcional)" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Ninguno</SelectItem>
+                {employees.map((employee) => (
+                  <SelectItem key={employee.auth_id} value={employee.auth_id}>
+                    {getEmployeeDisplay(employee)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <DialogFooter>

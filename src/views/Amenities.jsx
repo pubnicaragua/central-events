@@ -31,12 +31,14 @@ const AmenidadesPage = () => {
     // Cargar secciones y amenidades
     useEffect(() => {
         fetchSections()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [eventId])
 
     const fetchSections = async () => {
         try {
             setIsLoading(true)
-            // Obtener secciones y sus amenidades
+
+            // 1. Obtener todas las secciones
             const { data: sectionData, error: sectionError } = await supabase
                 .from("amenities_sections")
                 .select("*")
@@ -45,28 +47,44 @@ const AmenidadesPage = () => {
 
             if (sectionError) throw sectionError
 
-            // Si no hay secciones, preguntar si desea crear una
             if (sectionData.length === 0) {
                 setSectionModalOpen(true)
             }
 
-            // Para cada sección, obtener sus amenidades
-            const sectionsWithAmenities = await Promise.all(
-                sectionData.map(async (section) => {
-                    const { data: amenities, error: amenitiesError } = await supabase
-                        .from("amenities")
-                        .select("*")
-                        .eq("section_id", section.id)
-                        .order("name", { ascending: true })
+            // 2. Obtener todas las amenidades del evento
+            const { data: allAmenities, error: amenitiesError } = await supabase
+                .from("amenities")
+                .select("*")
+                .eq("event_id", eventId)
 
-                    if (amenitiesError) throw amenitiesError
+            if (amenitiesError) throw amenitiesError
 
-                    return {
-                        ...section,
-                        amenities: amenities || [],
-                    }
-                }),
-            )
+            // 3. Extraer todos los user_id únicos
+            const userIds = allAmenities.map((a) => a.user_id).filter(Boolean)
+
+            let employeeProfiles = []
+            if (userIds.length > 0) {
+                const { data: profileData, error: profileError } = await supabase
+                    .from("user_profile")
+                    .select("auth_id, name, second_name")
+                    .in("auth_id", userIds)
+
+                if (profileError) throw profileError
+
+                employeeProfiles = profileData
+            }
+
+            // 4. Agregar el nombre del empleado a cada amenidad
+            const enrichedAmenities = allAmenities.map((a) => ({
+                ...a,
+                employee: employeeProfiles.find((e) => e.auth_id === a.user_id) || null,
+            }))
+
+            // 5. Asignar las amenidades enriquecidas a su sección correspondiente
+            const sectionsWithAmenities = sectionData.map((section) => ({
+                ...section,
+                amenities: enrichedAmenities.filter((a) => a.section_id === section.id),
+            }))
 
             setSections(sectionsWithAmenities)
         } catch (error) {
@@ -76,13 +94,14 @@ const AmenidadesPage = () => {
         }
     }
 
+
     // Agregar nueva sección
     const handleAddSection = async (sectionData) => {
         try {
             // Verificar si es la primera sección para marcarla como predeterminada
             const isFirstSection = sections.length === 0
 
-            const { data, error } = await supabase
+            const { error } = await supabase
                 .from("amenities_sections")
                 .insert({
                     ...sectionData,
@@ -103,7 +122,7 @@ const AmenidadesPage = () => {
     // Editar sección
     const handleEditSection = async (sectionData) => {
         try {
-            const { data, error } = await supabase
+            const { error } = await supabase
                 .from("amenities_sections")
                 .update({ name: sectionData.name })
                 .eq("id", selectedSection.id)
@@ -196,7 +215,7 @@ const AmenidadesPage = () => {
                             const { error: insertError } = await supabase.from("amenities_attendees").insert({
                                 amenitie_id: amenity.id,
                                 attendee_id: attendee.id,
-                                quantity: 1,
+                                quantity: amenity.quantity,
                                 total: amenity.price || 0,
                                 is_active: true,
                             })
@@ -248,7 +267,7 @@ const AmenidadesPage = () => {
                     const { error: insertError } = await supabase.from("amenities_attendees").insert({
                         amenitie_id: amenityId,
                         attendee_id: attendee.id,
-                        quantity: 1,
+                        quantity: amenidadCreada[0].quantity,
                         total: amenityPrice,
                         is_active: true,
                     })
@@ -267,12 +286,13 @@ const AmenidadesPage = () => {
     // Editar amenidad
     const handleEditAmenidad = async (amenidadData) => {
         try {
-            const { data, error } = await supabase
+            const { error } = await supabase
                 .from("amenities")
                 .update({
                     name: amenidadData.name,
                     description: amenidadData.description,
                     quantity: amenidadData.quantity,
+                    user_id: amenidadData.user_id === 'none' ? null : amenidadData.user_id
                 })
                 .eq("id", selectedAmenidad.id)
                 .select()
@@ -425,6 +445,7 @@ const AmenidadesPage = () => {
                                             <th className="px-4 py-2 text-left">NOMBRE</th>
                                             <th className="px-4 py-2 text-left">DESCRIPCIÓN</th>
                                             <th className="px-4 py-2 text-left">CANTIDAD</th>
+                                            <th className="px-4 py-2 text-left">EMPLEADO</th>
                                             <th className="px-4 py-2 text-right">ACCIONES</th>
                                         </tr>
                                     </thead>
@@ -434,6 +455,12 @@ const AmenidadesPage = () => {
                                                 <td className="px-4 py-4">{amenidad.name}</td>
                                                 <td className="px-4 py-4">{amenidad.description || "-"}</td>
                                                 <td className="px-4 py-4">{amenidad.quantity || "-"}</td>
+                                                <td className="px-4 py-4">
+                                                    {amenidad.employee
+                                                        ? `${amenidad.employee.name} ${amenidad.employee.second_name || ""}`.trim()
+                                                        : <span className="italic text-gray-400">Sin asignar</span>}
+                                                </td>
+
                                                 <td className="px-4 py-4 text-right">
                                                     <div className="flex justify-end gap-2">
                                                         <Button
