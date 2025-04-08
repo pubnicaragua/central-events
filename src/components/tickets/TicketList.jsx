@@ -3,17 +3,18 @@
 import { useState } from "react"
 import { Link } from "react-router-dom"
 import { toast } from "react-hot-toast"
-import { EllipsisVertical, MessageSquareShare, Pencil, Trash, Eye } from "lucide-react"
+import { MessageSquareShare, Pencil, Trash, Eye } from "lucide-react"
 import EditTicketModal from "./EditTicketModal"
 import PropTypes from "prop-types"
+import useAuth from "../../hooks/useAuth"
 
 function TicketList({ tickets, loading, onUpdate, onDelete, eventId }) {
-    const [activeMenu, setActiveMenu] = useState(null)
     const [editingTicket, setEditingTicket] = useState(null)
+
+    const { isAdmin } = useAuth();
 
     const handleEditClick = (ticket) => {
         setEditingTicket(ticket)
-        setActiveMenu(null)
     }
 
     const handleDeleteClick = async (ticketId) => {
@@ -25,11 +26,6 @@ function TicketList({ tickets, loading, onUpdate, onDelete, eventId }) {
                 toast.error("Error al eliminar el ticket")
             }
         }
-        setActiveMenu(null)
-    }
-
-    const handleMenuToggle = (ticketId) => {
-        setActiveMenu(activeMenu === ticketId ? null : ticketId)
     }
 
     const handleCloseEditModal = () => {
@@ -144,67 +140,45 @@ function TicketList({ tickets, loading, onUpdate, onDelete, eventId }) {
                                     <span className="text-sm text-gray-900">{ticket.quantity}</span>
                                 )}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <div className="relative inline-block text-left">
-                                    <button
-                                        onClick={() => handleMenuToggle(ticket.id)}
-                                        className="text-gray-400 hover:text-gray-600 focus:outline-none"
-                                    >
-                                        <EllipsisVertical className="h-5 w-5" />
-                                    </button>
-
-                                    {activeMenu === ticket.id && (
-                                        <div
-                                            className={`absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10 ${tickets.indexOf(ticket) > tickets.length - 3
-                                                    ? "origin-bottom-right bottom-full mb-2"
-                                                    : "origin-top-right top-full"
-                                                }`}
+                            {isAdmin && (
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <div className="flex items-center justify-end space-x-2">
+                                        <Link
+                                            to={`/manage/event/${eventId}/messages`}
+                                            className="inline-flex items-center p-1.5 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+                                            title="Mensaje a los asistentes"
                                         >
-                                            <div className="py-1" role="menu" aria-orientation="vertical">
-                                                <Link
-                                                    to={`/manage/event/${eventId}/messages`}
-                                                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                                    role="menuitem"
-                                                    onClick={() => setActiveMenu(null)}
-                                                >
-                                                    <MessageSquareShare className="mr-3 h-5 w-5 text-gray-500" />
-                                                    Mensaje a los asistentes
-                                                </Link>
+                                            <MessageSquareShare className="h-4 w-4" />
+                                        </Link>
 
-                                                <button
-                                                    className="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                                    role="menuitem"
-                                                    onClick={() => handleEditClick(ticket)}
-                                                >
-                                                    <Pencil className="mr-3 h-5 w-5 text-gray-500" />
-                                                    Editar ticket
-                                                </button>
+                                        <button
+                                            onClick={() => handleEditClick(ticket)}
+                                            className="inline-flex items-center p-1.5 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+                                            title="Editar ticket"
+                                        >
+                                            <Pencil className="h-4 w-4" />
+                                        </button>
 
-                                                {ticket.ticket_type === "ESCALONADO" && (
-                                                    <Link
-                                                        to={`/manage/event/${eventId}/tickets/levels/${ticket.id}`}
-                                                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                                        role="menuitem"
-                                                        onClick={() => setActiveMenu(null)}
-                                                    >
-                                                        <Eye className="mr-3 h-5 w-5 text-gray-500" />
-                                                        Ver niveles
-                                                    </Link>
-                                                )}
+                                        {ticket.ticket_type === "ESCALONADO" && (
+                                            <Link
+                                                to={`/manage/event/${eventId}/tickets/levels/${ticket.id}`}
+                                                className="inline-flex items-center p-1.5 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+                                                title="Ver niveles"
+                                            >
+                                                <Eye className="h-4 w-4" />
+                                            </Link>
+                                        )}
 
-                                                <button
-                                                    className="flex w-full items-center px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
-                                                    role="menuitem"
-                                                    onClick={() => handleDeleteClick(ticket.id)}
-                                                >
-                                                    <Trash className="mr-3 h-5 w-5 text-red-500" />
-                                                    Eliminar billete
-                                                </button>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            </td>
+                                        <button
+                                            onClick={() => handleDeleteClick(ticket.id)}
+                                            className="inline-flex items-center p-1.5 text-red-600 bg-red-100 rounded-md hover:bg-red-200 transition-colors"
+                                            title="Eliminar billete"
+                                        >
+                                            <Trash className="h-4 w-4" />
+                                        </button>
+                                    </div>
+                                </td>
+                            )}
                         </tr>
                     ))}
                 </tbody>
@@ -231,4 +205,3 @@ TicketList.propTypes = {
 }
 
 export default TicketList
-
