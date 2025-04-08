@@ -74,15 +74,31 @@ const SeleccionarGanadorModal: React.FC<SeleccionarGanadorModalProps> = ({
 
   const fetchCurrentWinners = async () => {
     try {
-      const { data, error } = await supabase.from("raffle_winner").select("attendee_id").eq("raffle_id", raffle.id)
+      // Obtener todas las rifas del evento
+      const { data: raffles, error: rafflesError } = await supabase
+        .from("raffles")
+        .select("id")
+        .eq("event_id", eventId)
 
-      if (error) throw error
+      if (rafflesError) throw rafflesError
 
-      setCurrentWinners(data.map((winner) => winner.attendee_id))
+      const raffleIds = raffles.map((r) => r.id)
+
+      // Buscar ganadores en esas rifas
+      const { data: winners, error: winnersError } = await supabase
+        .from("raffle_winner")
+        .select("attendee_id")
+        .in("raffle_id", raffleIds)
+
+      if (winnersError) throw winnersError
+
+      const winnerIds = winners.map((w) => w.attendee_id)
+      setCurrentWinners(winnerIds)
     } catch (error) {
-      console.error("Error al cargar los ganadores actuales:", error)
+      console.error("Error al cargar ganadores:", error)
     }
   }
+
 
   const filterAttendees = () => {
     const filtered = attendees.filter((attendee) => {
