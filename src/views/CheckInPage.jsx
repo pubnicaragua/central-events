@@ -13,6 +13,8 @@ import { Badge } from "../components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Search, UserCheck, UserX, RefreshCw } from "lucide-react"
 import CheckInScanner from "../components/CheckInScanner"
+import UserMenu from "../components/UserMenu"
+import  useAuth  from "../hooks/useAuth"
 
 const CheckInPage = () => {
     const { eventId } = useParams()
@@ -26,11 +28,16 @@ const CheckInPage = () => {
         checkedIn: 0,
         pending: 0,
     })
+    const { user } = useAuth()
+    const [userRole, setUserRole] = useState(null)
 
     useEffect(() => {
         fetchEventData()
         fetchAttendees()
-    }, [eventId])
+        if (user) {
+            fetchUserRole()
+        }
+    }, [eventId, user])
 
     useEffect(() => {
         if (searchTerm.trim() === "") {
@@ -47,8 +54,39 @@ const CheckInPage = () => {
         }
     }, [searchTerm, attendees])
 
+    const fetchUserRole = async () => {
+        try {
+            const { data, error } = await supabase.from("user_roles").select("role_id").eq("user_id", user.id).single()
+
+            if (error) throw error
+            setUserRole(data.role_id)
+        } catch (error) {
+            console.error("Error fetching user role:", error)
+        }
+    }
+
     const fetchEventData = async () => {
         try {
+            // Verificar si el usuario tiene acceso a este evento
+            if (user) {
+                const { data: userProfile, error: profileError } = await supabase
+                    .from("user_profile")
+                    .select("event_id")
+                    .eq("auth_id", user.id)
+                    .single()
+
+                if (profileError && profileError.code !== "PGRST116") {
+                    console.error("Error fetching user profile:", profileError)
+                }
+
+                // Si el usuario no es admin (role_id = 1) y tiene un evento asignado diferente, redirigir
+                if (userRole !== 1 && userProfile && userProfile.event_id && userProfile.event_id !== eventId) {
+                    console.error("No tienes acceso a este evento")
+                    // Aquí podrías redirigir o mostrar un mensaje de error
+                    return
+                }
+            }
+
             const { data, error } = await supabase.from("events").select("*").eq("id", eventId).single()
 
             if (error) throw error
@@ -170,8 +208,13 @@ const CheckInPage = () => {
 
     return (
         <div className="container mx-auto py-6 px-4">
-            <h1 className="text-2xl font-bold mb-2">Check-in de asistentes</h1>
-            {event && <p className="text-gray-600 mb-6">Evento: {event.name}</p>}
+            <div className="flex justify-between items-center mb-6">
+                <div>
+                    <h1 className="text-2xl font-bold mb-2">Check-in de asistentes</h1>
+                    {event && <p className="text-gray-600">Evento: {event.name}</p>}
+                </div>
+                <UserMenu />
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                 <Card>
@@ -316,4 +359,3 @@ const CheckInPage = () => {
 }
 
 export default CheckInPage
-

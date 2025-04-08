@@ -159,8 +159,6 @@ const RolesPage = () => {
       if (values.modules && values.modules.length > 0) {
         const permissionsToInsert = values.modules.map((moduleId) => ({
           module_id: moduleId,
-          role_id: currentRole.id,
-          user_id: null, // Este campo se usa cuando se asigna un módulo específicamente a un usuario
         }))
 
         const { error } = await supabase.from("modules_permission").insert(permissionsToInsert)
@@ -224,7 +222,6 @@ const RolesPage = () => {
           .from("modules")
           .update({
             module_name: values.module_name,
-            role_id: values.role_id,
           })
           .eq("id", editingModule.id)
 
@@ -234,7 +231,6 @@ const RolesPage = () => {
         // Crear nuevo módulo
         const { error } = await supabase.from("modules").insert({
           module_name: values.module_name,
-          role_id: values.role_id,
         })
 
         if (error) throw error
@@ -570,21 +566,6 @@ const RolesPage = () => {
                   defaultValue={editingModule?.module_name || ""}
                   required
                 />
-              </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-1">Rol Asociado</label>
-                <select
-                  name="role_id"
-                  className="w-full p-2 border rounded-md"
-                  defaultValue={editingModule?.role_id || ""}
-                >
-                  <option value="">Sin rol asociado</option>
-                  {roles.map((role) => (
-                    <option key={role.id} value={role.id}>
-                      {role.name}
-                    </option>
-                  ))}
-                </select>
               </div>
               <div className="flex justify-end space-x-2">
                 <button
