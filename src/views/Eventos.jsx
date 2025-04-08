@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
-import { Plus, Search, Calendar, Loader } from "lucide-react"
+import { Plus, Search, Calendar, Loader, AlertCircle } from "lucide-react"
 import supabase from "../api/supabase"
 import EventCard from "../components/events/EventCard"
 import CreateEventModal from "../components/events/CreateEventModal"
+import { getEvents } from "../utils/eventsActions"
+import useAuth from "../hooks/useAuth"
 
 function Events() {
   const [events, setEvents] = useState([])
@@ -14,9 +16,9 @@ function Events() {
   const [sortOrder, setSortOrder] = useState("recent")
   const [activeTab, setActiveTab] = useState("Próximo")
   const [showCreateEventModal, setShowCreateEventModal] = useState(false)
-  const [userId, setUserId] = useState(null)
   const [error, setError] = useState(null)
   const navigate = useNavigate()
+  const { user, userRole } = useAuth()
 
   function printError(tablename, action, error) {
     console.error(`Error ${action} ${tablename}: `, error)
@@ -24,47 +26,18 @@ function Events() {
   }
 
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const {
-          data: { user },
-          error: userError,
-        } = await supabase.auth.getUser()
-        if (userError) throw userError
-        if (!user) throw new Error("No se encontró usuario autenticado")
-
-        setUserId(user.id)
-      } catch (err) {
-        console.error("Error de autenticación:", err)
-        setError("No se pudo verificar tu sesión. Por favor, inicia sesión nuevamente.")
-      }
+    if (user) {
+      fetchEvents()
     }
-    fetchUser()
-  }, [])
-
-  useEffect(() => {
-    fetchEvents()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab, sortOrder])
+  }, [activeTab, sortOrder, user, userRole])
 
   async function fetchEvents() {
     setLoading(true)
     setError(null)
     try {
-      const status = activeTab
-
-      // Definir el orden dinámicamente
-      const isRecent = sortOrder === "recent"
-
-      // Consulta sin filtro de usuario
-      const { data, error } = await supabase
-        .from("events")
-        .select("*")
-        .eq("status", status)
-        .order("start_date", { ascending: !isRecent })
-
-      if (error) throw error
-
+      // Pasamos el userId y userRoleId a la función getEvents
+      const data = await getEvents(activeTab, "", sortOrder, user?.id, userRole)
       setEvents(data || [])
     } catch (err) {
       console.error("Error al obtener eventos:", err)
@@ -78,7 +51,10 @@ function Events() {
 
   const handleCreateEvent = async (eventData) => {
     try {
-      const { data, error } = await supabase.from("events").insert([eventData]).select()
+      // Eliminamos el campo organizer_id si existe
+      const { organizer_id, ...eventDataWithoutOrganizer } = eventData
+
+      const { data, error } = await supabase.from("events").insert([eventDataWithoutOrganizer]).select()
 
       if (error) {
         const errorMsg = printError("events", "crear", error)
@@ -86,8 +62,23 @@ function Events() {
       }
 
       if (data && data[0]) {
-        // Redirigir a getting-started en lugar de settings
-        navigate(`/manage/event/${data.id}/getting-started`)
+        // Si el usuario es organizador, asignamos automáticamente el evento creado a su perfil
+        if (userRole === 2) {
+          try {
+            const { error: profileError } = await supabase
+              .from("user_profile")
+              .upsert([{ auth_id: user.id, event_id: data[0].id }])
+
+            if (profileError) {
+              console.error("Error al asignar evento al organizador:", profileError)
+            }
+          } catch (err) {
+            console.error("Error al actualizar perfil:", err)
+          }
+        }
+
+        // Redirigir a getting-started
+        navigate(`/manage/event/${data[0].id}/getting-started`)
       } else {
         throw new Error("No se recibió confirmación del servidor")
       }
@@ -99,21 +90,36 @@ function Events() {
 
   const handleDuplicateEvent = async (event) => {
     try {
+      // Eliminamos el campo organizer_id si existe
+      const { organizer_id, id, ...eventDataWithoutIds } = event
+
       const duplicatedEvent = {
-        organizer_id: event.organizer_id,
+        ...eventDataWithoutIds,
         name: event.name + " (Copia)",
-        description: event.description,
-        start_date: event.start_date,
-        end_date: event.end_date,
         status: event.status,
       }
 
-      const { error } = await supabase.from("events").insert([duplicatedEvent]).select()
+      const { data, error } = await supabase.from("events").insert([duplicatedEvent]).select()
 
       if (error) {
         const errorMsg = printError("event", "duplicar", error)
         setError(errorMsg)
         return
+      }
+
+      // Si el usuario es organizador, asignamos automáticamente el evento duplicado a su perfil
+      if (userRole === 2 && data && data[0]) {
+        try {
+          const { error: profileError } = await supabase
+            .from("user_profile")
+            .upsert([{ auth_id: user.id, event_id: data[0].id }])
+
+          if (profileError) {
+            console.error("Error al asignar evento duplicado al organizador:", profileError)
+          }
+        } catch (err) {
+          console.error("Error al actualizar perfil:", err)
+        }
       }
 
       fetchEvents()
@@ -144,6 +150,9 @@ function Events() {
     fetchEvents()
   }
 
+  // Determinar si mostrar el botón de crear evento
+  const canCreateEvent = userRole === 1 // Solo admin puede crear eventos
+
   return (
     <div className="min-h-screen bg-emerald-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -153,18 +162,23 @@ function Events() {
               <Calendar className="w-7 h-7 mr-3 text-emerald-700" />
               Eventos
             </h2>
-            <button
-              className="bg-emerald-800 text-white px-5 py-2.5 rounded-lg flex items-center justify-center hover:bg-emerald-700 transition-colors shadow-md"
-              onClick={() => setShowCreateEventModal(true)}
-            >
-              <Plus className="w-5 h-5 mr-2" />
-              Crear Evento
-            </button>
+            {canCreateEvent && (
+              <button
+                className="bg-emerald-800 text-white px-5 py-2.5 rounded-lg flex items-center justify-center hover:bg-emerald-700 transition-colors shadow-md"
+                onClick={() => setShowCreateEventModal(true)}
+              >
+                <Plus className="w-5 h-5 mr-2" />
+                Crear Evento
+              </button>
+            )}
           </div>
 
           {error && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg flex justify-between items-center shadow-sm">
-              <p>{error}</p>
+              <div className="flex items-center">
+                <AlertCircle className="w-5 h-5 mr-2" />
+                <p>{error}</p>
+              </div>
               <button
                 onClick={handleRetry}
                 className="text-sm bg-red-100 hover:bg-red-200 text-red-800 px-3 py-1 rounded-md transition-colors"
@@ -206,8 +220,8 @@ function Events() {
                 <button
                   key={tab}
                   className={`py-4 px-1 border-b-2 font-medium text-sm transition-all ${activeTab === tab
-                    ? "border-emerald-600 text-emerald-800"
-                    : "border-transparent text-gray-500 hover:text-emerald-700 hover:border-emerald-300"
+                      ? "border-emerald-600 text-emerald-800"
+                      : "border-transparent text-gray-500 hover:text-emerald-700 hover:border-emerald-300"
                     }`}
                   onClick={() => setActiveTab(tab)}
                 >
@@ -235,25 +249,34 @@ function Events() {
             ) : (
               <div className="text-center py-16 bg-emerald-50 rounded-xl border border-emerald-100">
                 <Calendar className="w-16 h-16 text-emerald-300 mx-auto mb-4" />
-                <p className="text-emerald-700 mb-4">No hay eventos para mostrar</p>
-                <button
-                  onClick={() => setShowCreateEventModal(true)}
-                  className="text-emerald-700 hover:text-emerald-900 font-medium bg-white px-5 py-2 rounded-lg shadow-sm border border-emerald-200 hover:bg-emerald-50 transition-colors"
-                >
-                  Crear tu primer evento
-                </button>
+                <p className="text-emerald-700 mb-4">
+                  {userRole === 2 || userRole === 4
+                    ? "No tienes eventos asignados en esta categoría"
+                    : "No hay eventos para mostrar"}
+                </p>
+                {canCreateEvent && (
+                  <button
+                    onClick={() => setShowCreateEventModal(true)}
+                    className="text-emerald-700 hover:text-emerald-900 font-medium bg-white px-5 py-2 rounded-lg shadow-sm border border-emerald-200 hover:bg-emerald-50 transition-colors"
+                  >
+                    Crear tu primer evento
+                  </button>
+                )}
               </div>
             )}
           </div>
         </div>
       </div>
 
-      {showCreateEventModal && (
-        <CreateEventModal onClose={() => setShowCreateEventModal(false)} userId={userId} onSubmit={handleCreateEvent} />
+      {showCreateEventModal && canCreateEvent && (
+        <CreateEventModal
+          onClose={() => setShowCreateEventModal(false)}
+          userId={user?.id}
+          onSubmit={handleCreateEvent}
+        />
       )}
     </div>
   )
 }
 
 export default Events
-

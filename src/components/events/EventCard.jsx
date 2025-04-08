@@ -4,6 +4,9 @@ import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { MoreVertical, Settings, Copy, Archive, Ticket, DollarSign } from "lucide-react"
 import PropTypes from "prop-types"
+import supabase from "../../api/supabase"
+import useAuth from "../../hooks/useAuth"
+
 
 function EventCard({ event, onDuplicate, onArchive }) {
     const [showMenu, setShowMenu] = useState(false)
@@ -17,6 +20,9 @@ function EventCard({ event, onDuplicate, onArchive }) {
             time: date.toLocaleTimeString("es", { hour: "2-digit", minute: "2-digit" }),
         }
     }
+
+    const { isAdmin } = useAuth()
+
 
     const startDate = event.start_date ? formatDate(event.start_date) : { day: "--", month: "---", time: "--:--" }
 
@@ -68,36 +74,43 @@ function EventCard({ event, onDuplicate, onArchive }) {
                                     <button
                                         className="w-full text-left px-4 py-2.5 text-sm text-emerald-700 hover:bg-emerald-50 flex items-center"
                                         onClick={() => {
-                                            navigate(`/manage/event/${event.id}/getting-started`)
+                                            isAdmin ? navigate(`/manage/event/${event.id}/getting-started`) :
+                                                navigate(`/manage/event/${event.id}/dashboard`)
                                             setShowMenu(false)
                                         }}
                                     >
                                         <Settings className="w-5 h-5 mr-3 text-emerald-600" />
                                         Administrar evento
                                     </button>
-                                    <button
-                                        className="w-full text-left px-4 py-2.5 text-sm text-emerald-700 hover:bg-emerald-50 flex items-center"
-                                        onClick={() => {
-                                            onDuplicate()
-                                            setShowMenu(false)
-                                        }}
-                                    >
-                                        <Copy className="w-5 h-5 mr-3 text-emerald-600" />
-                                        Duplicar evento
-                                    </button>
-                                    <button
-                                        className="w-full text-left px-4 py-2.5 text-sm text-emerald-700 hover:bg-emerald-50 flex items-center"
-                                        onClick={() => {
-                                            onArchive()
-                                            setShowMenu(false)
-                                        }}
-                                    >
-                                        <Archive className="w-5 h-5 mr-3 text-emerald-600" />
-                                        Archivar evento
-                                    </button>
+
+                                    {isAdmin && (
+                                        <>
+                                            <button
+                                                className="w-full text-left px-4 py-2.5 text-sm text-emerald-700 hover:bg-emerald-50 flex items-center"
+                                                onClick={() => {
+                                                    onDuplicate()
+                                                    setShowMenu(false)
+                                                }}
+                                            >
+                                                <Copy className="w-5 h-5 mr-3 text-emerald-600" />
+                                                Duplicar evento
+                                            </button>
+                                            <button
+                                                className="w-full text-left px-4 py-2.5 text-sm text-emerald-700 hover:bg-emerald-50 flex items-center"
+                                                onClick={() => {
+                                                    onArchive()
+                                                    setShowMenu(false)
+                                                }}
+                                            >
+                                                <Archive className="w-5 h-5 mr-3 text-emerald-600" />
+                                                Archivar evento
+                                            </button>
+                                        </>
+                                    )}
                                 </div>
                             </div>
                         )}
+
                     </div>
                 </div>
 
