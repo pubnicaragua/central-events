@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react"
 import { useParams } from "react-router-dom"
 import supabase from "../api/supabase"
-import { Edit, Eye, QrCode, Search, Trash, Download } from "lucide-react"
+import useAuth from "../hooks/useAuth"
+import { Edit, Eye, QrCode, Search, Trash, Download, Upload } from "lucide-react"
 import { Button } from "../components/ui/button"
 import { Input } from "../components/ui/input"
 import { Badge } from "../components/ui/badge"
@@ -12,6 +13,7 @@ import AgregarAsistenteModal from "../components/attendants/agregar-asistente-mo
 import EditarAsistenteModal from "../components/attendants/editar-asistente-modal"
 import VerAmenidadesModal from "../components/attendants/ver-amenidades-modal"
 import QrCodeModal from "../components/attendants/qr-code-modal"
+import ImportarAsistentesModal from "../components/attendants/importar-asistentes-modal"
 
 const AsistentesPage = () => {
   const { eventId } = useParams()
@@ -21,10 +23,13 @@ const AsistentesPage = () => {
   const [editarModalOpen, setEditarModalOpen] = useState(false)
   const [amenidadesModalOpen, setAmenidadesModalOpen] = useState(false)
   const [qrCodeModalOpen, setQrCodeModalOpen] = useState(false)
+  const [importarModalOpen, setImportarModalOpen] = useState(false)
   const [selectedAttendee, setSelectedAttendee] = useState(null)
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [tickets, setTickets] = useState([])
+
+  const { isAdmin } = useAuth();
 
   // Cargar asistentes
   useEffect(() => {
@@ -46,6 +51,7 @@ const AsistentesPage = () => {
 
       if (error) throw error
 
+      console.log("Asistentes:", data)
       setAttendees(data || [])
     } catch (error) {
       console.error("Error al cargar los asistentes:", error)
@@ -82,7 +88,7 @@ const AsistentesPage = () => {
           name: attendantData.name,
           second_name: attendantData.second_name,
           email: attendantData.email,
-          status: attendantData.status,
+          checked_in: attendantData.checked_in,
           ticket_id: attendantData.ticket_id,
           code,
           event_id: eventId,
@@ -125,7 +131,7 @@ const AsistentesPage = () => {
           name: attendantData.name,
           second_name: attendantData.second_name,
           email: attendantData.email,
-          status: attendantData.status,
+          checked_in: attendantData.checked_in,
           ticket_id: attendantData.ticket_id,
         })
         .eq("id", selectedAttendee.id)
@@ -222,7 +228,7 @@ const AsistentesPage = () => {
       attendee.second_name || "",
       attendee.email || "",
       attendee.code || "",
-      attendee.status || "",
+      attendee.checked_in || "",
       attendee.tickets?.name || "",
     ])
 
@@ -250,20 +256,11 @@ const AsistentesPage = () => {
     )
   })
 
-  const getStatusBadge = (status) => {
-    switch (status) {
-      case "confirmado":
-        return <Badge className="bg-green-500">Confirmado</Badge>
-      case "no confirmado":
-        return (
-          <Badge variant="outline" className="border-yellow-500 text-yellow-500">
-            No confirmado
-          </Badge>
-        )
-      case "cancelado":
-        return <Badge className="bg-red-500">Cancelado</Badge>
-      default:
-        return <Badge variant="outline">No confirmado</Badge>
+  const getchecked_inBadge = (checked_in) => {
+    if (checked_in) {
+      return <Badge className="bg-green-500">Confirmado</Badge>
+    } else if (checked_in === false) {
+      return <Badge variant="outline">No confirmado</Badge>
     }
   }
 
@@ -275,6 +272,10 @@ const AsistentesPage = () => {
           <Button variant="outline" onClick={handleExport} className="flex items-center gap-2">
             <Download className="w-4 h-4" />
             Exportar
+          </Button>
+          <Button variant="outline" onClick={() => setImportarModalOpen(true)} className="flex items-center gap-2">
+            <Upload className="w-4 h-4" />
+            Importar Excel
           </Button>
           <Button onClick={() => setAgregarModalOpen(true)} className="bg-purple-600 hover:bg-purple-700 text-white">
             Agregar
@@ -321,7 +322,7 @@ const AsistentesPage = () => {
                     <code className="bg-gray-100 px-2 py-1 rounded text-sm font-mono">{attendee.code}</code>
                   </td>
                   <td className="px-4 py-4">{attendee.tickets?.name || "-"}</td>
-                  <td className="px-4 py-4">{getStatusBadge(attendee.status)}</td>
+                  <td className="px-4 py-4">{getchecked_inBadge(attendee.checked_in)}</td>
                   <td className="px-4 py-4">
                     <div className="flex justify-end gap-2">
                       <Button
@@ -346,29 +347,33 @@ const AsistentesPage = () => {
                       >
                         <QrCode className="w-4 h-4" />
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => {
-                          setSelectedAttendee(attendee)
-                          setEditarModalOpen(true)
-                        }}
-                        title="Editar"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                        onClick={() => {
-                          setSelectedAttendee(attendee)
-                          setConfirmDialogOpen(true)
-                        }}
-                        title="Eliminar"
-                      >
-                        <Trash className="w-4 h-4" />
-                      </Button>
+                      {isAdmin && (
+                        <>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => {
+                              setSelectedAttendee(attendee)
+                              setEditarModalOpen(true)
+                            }}
+                            title="Editar"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            onClick={() => {
+                              setSelectedAttendee(attendee)
+                              setConfirmDialogOpen(true)
+                            }}
+                            title="Eliminar"
+                          >
+                            <Trash className="w-4 h-4" />
+                          </Button>
+                        </>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -413,6 +418,15 @@ const AsistentesPage = () => {
       {selectedAttendee && (
         <QrCodeModal isOpen={qrCodeModalOpen} onClose={() => setQrCodeModalOpen(false)} attendee={selectedAttendee} />
       )}
+
+      {/* Modal para importar asistentes desde Excel */}
+      <ImportarAsistentesModal
+        isOpen={importarModalOpen}
+        onClose={() => setImportarModalOpen(false)}
+        onComplete={fetchAttendees}
+        eventId={eventId}
+        tickets={tickets}
+      />
 
       {/* Modal de confirmación para eliminar */}
       <ConfirmDialog
