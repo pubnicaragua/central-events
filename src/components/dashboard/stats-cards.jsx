@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Ticket, DollarSign, FileText, Users } from "lucide-react"
 
-export function StatsCards({ stats }) {
+export default function StatsCards({ stats }) {
   return (
     <>
       <Card>

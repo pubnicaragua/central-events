@@ -4,37 +4,73 @@ import { useState, useEffect } from "react"
 import { useParams } from "react-router-dom"
 import { Eye, Ticket, DollarSign, FileText } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { StatsCard } from "../components/dashboard/StatsCard"
-import { TicketSalesChart } from "../components/dashboard/TicketsSalesChart"
-import { RevenueChart } from "../components/dashboard/RevenueChart"
-import { getDashboardStats, getTicketSalesData, getRevenueData } from "@actions/dashboard"
+import { AmenityConsumptionCard } from "../components/dashboard/amenity-consumption-card"
+import { CheckInChart } from "../components/dashboard/check-in-chart"
+import { AmenitiesConsumptionTable } from "../components/dashboard/amenities-consumption-table"
+import supabase from "../api/supabase"
 
-export function DashboardPage() {
+export default function DashboardPage() {
   const { eventId } = useParams()
-  const [stats, setStats] = useState(null)
-  const [ticketSales, setTicketSales] = useState([])
-  const [revenue, setRevenue] = useState([])
+  const [stats, setStats] = useState({
+    ticketsSold: 0,
+    grossSales: 0,
+    attendeeCount: 0,
+    ordersCreated: 0,
+  })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const statsData = await getDashboardStats(eventId)
-        const ticketSalesData = await getTicketSalesData(eventId)
-        const revenueData = await getRevenueData(eventId)
+        setLoading(true)
 
-        setStats(statsData)
-        setTicketSales(ticketSalesData)
-        setRevenue(revenueData)
+        // Obtener estadísticas de tickets vendidos
+        const { data: ticketsData, error: ticketsError } = await supabase
+          .from("tickets")
+          .select("quantity")
+          .eq("event_id", eventId)
+
+        if (ticketsError) throw ticketsError
+
+        // Obtener estadísticas de órdenes
+        const { data: ordersData, error: ordersError } = await supabase
+          .from("orders")
+          .select("id, total")
+          .eq("event_id", eventId)
+
+        if (ordersError) throw ordersError
+
+        // Obtener conteo de asistentes
+        const { count: attendeeCount, error: attendeeError } = await supabase
+          .from("attendants")
+          .select("id", { count: "exact" })
+          .eq("event_id", eventId)
+
+        if (attendeeError) throw attendeeError
+
+        // Calcular estadísticas
+        const ticketsSold = ticketsData.reduce((acc, ticket) => acc + (ticket.quantity || 0), 0)
+        const grossSales = ordersData.reduce((acc, order) => acc + (order.total || 0), 0)
+        const ordersCreated = ordersData.length
+
+        setStats({
+          ticketsSold,
+          grossSales,
+          attendeeCount,
+          ordersCreated,
+        })
       } catch (err) {
+        console.error("Error fetching dashboard data:", err)
         setError(err.message)
       } finally {
         setLoading(false)
       }
     }
 
-    fetchDashboardData()
+    if (eventId) {
+      fetchDashboardData()
+    }
   }, [eventId])
 
   if (loading) return <div>Cargando...</div>
@@ -48,37 +84,59 @@ export function DashboardPage() {
       </div>
 
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        <StatsCard title="Entradas vendidas" value={stats.ticketsSold} icon={Ticket} />
-        <StatsCard
-          title="Ventas brutas"
-          value={new Intl.NumberFormat("es-ES", {
-            style: "currency",
-            currency: "EUR",
-          }).format(stats.grossSales)}
-          icon={DollarSign}
-        />
-        <StatsCard title="Vistas de página" value={stats.pageViews} icon={Eye} />
-        <StatsCard title="Órdenes creadas" value={stats.ordersCreated} icon={FileText} />
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Entradas vendidas</CardTitle>
+            <Ticket className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.ticketsSold}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Ventas brutas</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {new Intl.NumberFormat("es-ES", {
+                style: "currency",
+                currency: "EUR",
+              }).format(stats.grossSales)}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Asistentes</CardTitle>
+            <Eye className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.attendeeCount}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Órdenes creadas</CardTitle>
+            <FileText className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.ordersCreated}</div>
+          </CardContent>
+        </Card>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Venta de boletos</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <TicketSalesChart data={ticketSales} />
-          </CardContent>
-        </Card>
+      <div className="grid gap-6 md:grid-cols-2">
+        <AmenityConsumptionCard eventId={eventId} />
+        <CheckInChart eventId={eventId} />
+      </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Ganancia</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <RevenueChart data={revenue} />
-          </CardContent>
-        </Card>
+      <div className="mt-6">
+        <AmenitiesConsumptionTable eventId={eventId} />
       </div>
     </div>
   )
