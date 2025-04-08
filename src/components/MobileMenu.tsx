@@ -19,13 +19,13 @@ import {
 } from "lucide-react"
 import { Link, useLocation } from "react-router-dom"
 import { useMobile } from "../hooks/useMobile"
-import { useAuth } from "../context/AuthContext"
+import useAuth from "../hooks/useAuth"
 
 export const MobileMenu = () => {
   const [isOpen, setIsOpen] = useState(false)
   const isMobile = useMobile()
   const location = useLocation()
-  const { logout } = useAuth()
+  const { logout, hasPermission } = useAuth()
   const eventId = location.pathname.split("/")[3] // Extraer el eventId de la URL
 
   // Close menu when route changes
@@ -54,7 +54,7 @@ export const MobileMenu = () => {
       {/* Hamburger button */}
       <button
         onClick={toggleMenu}
-        className="fixed top-4 left-4 z-50 p-2 rounded-md bg-gray-800 text-white shadow-md lg:hidden"
+        className="fixed top-4 left-4 z-50 p-2 rounded-md bg-emerald-800 text-white shadow-md lg:hidden"
         aria-label="Toggle menu"
       >
         {isOpen ? <X size={24} /> : <Menu size={24} />}
@@ -70,16 +70,23 @@ export const MobileMenu = () => {
 
       {/* Mobile menu panel */}
       <div
-        className={`fixed top-0 left-0 h-full w-4/5 max-w-xs bg-gray-700/95 z-50 shadow-xl transform transition-transform duration-300 ease-in-out lg:hidden ${
+        className={`fixed top-0 left-0 h-full w-4/5 max-w-xs bg-emerald-900/95 z-50 shadow-xl transform transition-transform duration-300 ease-in-out lg:hidden ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         <div className="flex flex-col h-full">
-          <div className="flex h-[60px] items-center border-b border-gray-600 px-6">
-            <Link to="/" className="flex items-center gap-2 font-semibold text-white">
-              <img src="/logo.png" alt="Logo" className="h-8 w-8" />
-              <span>Central Events</span>
+          <div className="flex h-[60px] items-center justify-between border-b border-emerald-800 px-6">
+            <Link to="/admin/events" className="flex items-center gap-2 font-semibold text-white">
+              <img src="/logo.png" alt="Logo" className="h-22 w-28" />
             </Link>
+            {/* Close button inside sidebar */}
+            <button
+              onClick={toggleMenu}
+              className="p-2 rounded-full hover:bg-emerald-800 text-white transition-colors"
+              aria-label="Cerrar menú"
+            >
+              <X size={20} />
+            </button>
           </div>
 
           <div className="flex-1 overflow-y-auto py-2">
@@ -88,185 +95,229 @@ export const MobileMenu = () => {
                 to={`/manage/event/${eventId}/getting-started`}
                 className={`flex items-center gap-3 rounded-lg px-3 py-2 ${
                   location.pathname === `/manage/event/${eventId}/getting-started`
-                    ? "bg-gray-900 text-white"
-                    : "text-gray-300 hover:text-white"
+                    ? "bg-emerald-950 text-white"
+                    : "text-emerald-100 hover:bg-emerald-800 hover:text-white"
                 }`}
               >
                 Empezando
               </Link>
 
               <div className="mt-6">
-                <h4 className="px-2 py-2 text-xs font-semibold text-gray-400">Administrar</h4>
+                <h4 className="px-2 py-2 text-xs font-semibold text-emerald-100 uppercase tracking-wider">
+                  Administrar
+                </h4>
                 <div className="grid gap-1">
-                  <Link
-                    to={`/manage/event/${eventId}/dashboard`}
-                    className={`flex items-center gap-3 rounded-lg px-3 py-2 ${
-                      location.pathname === `/manage/event/${eventId}/dashboard`
-                        ? "bg-gray-900 text-white"
-                        : "text-gray-300 hover:text-white"
-                    }`}
-                  >
-                    <LayoutDashboard className="h-4 w-4" />
-                    Panel
-                  </Link>
-                  <Link
-                    to={`/manage/event/${eventId}/settings`}
-                    className={`flex items-center gap-3 rounded-lg px-3 py-2 ${
-                      location.pathname === `/manage/event/${eventId}/settings`
-                        ? "bg-gray-900 text-white"
-                        : "text-gray-300 hover:text-white"
-                    }`}
-                  >
-                    <Settings className="h-4 w-4" />
-                    Ajustes
-                  </Link>
-                  <Link
-                    to={`/manage/event/${eventId}/tickets`}
-                    className={`flex items-center gap-3 rounded-lg px-3 py-2 ${
-                      location.pathname === `/manage/event/${eventId}/tickets`
-                        ? "bg-gray-900 text-white"
-                        : "text-gray-300 hover:text-white"
-                    }`}
-                  >
-                    <Ticket className="h-4 w-4" />
-                    Entradas
-                  </Link>
-                  <Link
-                    to={`/manage/event/${eventId}/attendees`}
-                    className={`flex items-center gap-3 rounded-lg px-3 py-2 ${
-                      location.pathname === `/manage/event/${eventId}/attendees`
-                        ? "bg-gray-900 text-white"
-                        : "text-gray-300 hover:text-white"
-                    }`}
-                  >
-                    <Users className="h-4 w-4" />
-                    Asistentes
-                  </Link>
-                  <Link
-                    to={`/manage/event/${eventId}/amenities`}
-                    className={`flex items-center gap-3 rounded-lg px-3 py-2 ${
-                      location.pathname === `/manage/event/${eventId}/amenities`
-                        ? "bg-gray-900 text-white"
-                        : "text-gray-300 hover:text-white"
-                    }`}
-                  >
-                    <Users className="h-4 w-4" />
-                    Amenidades
-                  </Link>
-                  <Link
-                    to={`/manage/event/${eventId}/check-in`}
-                    className={`flex items-center gap-3 rounded-lg px-3 py-2 ${
-                      location.pathname === `/manage/event/${eventId}/check-in`
-                        ? "bg-gray-900 text-white"
-                        : "text-gray-300 hover:text-white"
-                    }`}
-                  >
-                    <ShoppingCart className="h-4 w-4" />
-                    Check-in
-                  </Link>
-                  <Link
-                    to={`/manage/event/${eventId}/orders`}
-                    className={`flex items-center gap-3 rounded-lg px-3 py-2 ${
-                      location.pathname === `/manage/event/${eventId}/orders`
-                        ? "bg-gray-900 text-white"
-                        : "text-gray-300 hover:text-white"
-                    }`}
-                  >
-                    <ShoppingCart className="h-4 w-4" />
-                    Pedidos
-                  </Link>
-                  <Link
-                    to={`/manage/event/${eventId}/raffles`}
-                    className={`flex items-center gap-3 rounded-lg px-3 py-2 ${
-                      location.pathname === `/manage/event/${eventId}/raffles`
-                        ? "bg-gray-900 text-white"
-                        : "text-gray-300 hover:text-white"
-                    }`}
-                  >
-                    <HelpCircle className="h-4 w-4" />
-                    Rifas
-                  </Link>
-                  <Link
-                    to={`/manage/event/${eventId}/questions`}
-                    className={`flex items-center gap-3 rounded-lg px-3 py-2 ${
-                      location.pathname === `/manage/event/${eventId}/questions`
-                        ? "bg-gray-900 text-white"
-                        : "text-gray-300 hover:text-white"
-                    }`}
-                  >
-                    <HelpCircle className="h-4 w-4" />
-                    Preguntas
-                  </Link>
-                  <Link
-                    to={`/manage/event/${eventId}/promo-codes`}
-                    className={`flex items-center gap-3 rounded-lg px-3 py-2 ${
-                      location.pathname === `/manage/event/${eventId}/promo-codes`
-                        ? "bg-gray-900 text-white"
-                        : "text-gray-300 hover:text-white"
-                    }`}
-                  >
-                    <Tag className="h-4 w-4" />
-                    Códigos promocionales
-                  </Link>
-                  <Link
-                    to={`/manage/event/${eventId}/messages`}
-                    className={`flex items-center gap-3 rounded-lg px-3 py-2 ${
-                      location.pathname === `/manage/event/${eventId}/messages`
-                        ? "bg-gray-900 text-white"
-                        : "text-gray-300 hover:text-white"
-                    }`}
-                  >
-                    <MessageSquare className="h-4 w-4" />
-                    Mensajes
-                  </Link>
-                  <Link
-                    to={`/manage/event/${eventId}/capacity`}
-                    className={`flex items-center gap-3 rounded-lg px-3 py-2 ${
-                      location.pathname === `/manage/event/${eventId}/capacity`
-                        ? "bg-gray-900 text-white"
-                        : "text-gray-300 hover:text-white"
-                    }`}
-                  >
-                    <Users2 className="h-4 w-4" />
-                    Capacidad
-                  </Link>
-                  <Link
-                    to={`/manage/event/${eventId}/registration-lists`}
-                    className={`flex items-center gap-3 rounded-lg px-3 py-2 ${
-                      location.pathname === `/manage/event/${eventId}/registration-lists`
-                        ? "bg-gray-900 text-white"
-                        : "text-gray-300 hover:text-white"
-                    }`}
-                  >
-                    <ClipboardList className="h-4 w-4" />
-                    Listas de registro
-                  </Link>
+                  {hasPermission("eventDashboard") && (
+                    <Link
+                      to={`/manage/event/${eventId}/dashboard`}
+                      className={`flex items-center gap-3 rounded-lg px-3 py-2 ${
+                        location.pathname === `/manage/event/${eventId}/dashboard`
+                          ? "bg-emerald-950 text-white"
+                          : "text-emerald-100 hover:bg-emerald-800 hover:text-white"
+                      }`}
+                    >
+                      <LayoutDashboard className="h-4 w-4" />
+                      Panel
+                    </Link>
+                  )}
+
+                  {hasPermission("eventSettings") && (
+                    <Link
+                      to={`/manage/event/${eventId}/settings`}
+                      className={`flex items-center gap-3 rounded-lg px-3 py-2 ${
+                        location.pathname === `/manage/event/${eventId}/settings`
+                          ? "bg-emerald-950 text-white"
+                          : "text-emerald-100 hover:bg-emerald-800 hover:text-white"
+                      }`}
+                    >
+                      <Settings className="h-4 w-4" />
+                      Ajustes
+                    </Link>
+                  )}
+
+                  {hasPermission("eventTickets") && (
+                    <Link
+                      to={`/manage/event/${eventId}/tickets`}
+                      className={`flex items-center gap-3 rounded-lg px-3 py-2 ${
+                        location.pathname === `/manage/event/${eventId}/tickets`
+                          ? "bg-emerald-950 text-white"
+                          : "text-emerald-100 hover:bg-emerald-800 hover:text-white"
+                      }`}
+                    >
+                      <Ticket className="h-4 w-4" />
+                      Entradas
+                    </Link>
+                  )}
+
+                  {hasPermission("eventAttendees") && (
+                    <Link
+                      to={`/manage/event/${eventId}/attendees`}
+                      className={`flex items-center gap-3 rounded-lg px-3 py-2 ${
+                        location.pathname === `/manage/event/${eventId}/attendees`
+                          ? "bg-emerald-950 text-white"
+                          : "text-emerald-100 hover:bg-emerald-800 hover:text-white"
+                      }`}
+                    >
+                      <Users className="h-4 w-4" />
+                      Asistentes
+                    </Link>
+                  )}
+
+                  {hasPermission("eventAmenities") && (
+                    <Link
+                      to={`/manage/event/${eventId}/amenities`}
+                      className={`flex items-center gap-3 rounded-lg px-3 py-2 ${
+                        location.pathname === `/manage/event/${eventId}/amenities`
+                          ? "bg-emerald-950 text-white"
+                          : "text-emerald-100 hover:bg-emerald-800 hover:text-white"
+                      }`}
+                    >
+                      <Users className="h-4 w-4" />
+                      Amenidades
+                    </Link>
+                  )}
+
+                  {hasPermission("eventCheckIn") && (
+                    <Link
+                      to={`/manage/event/${eventId}/check-in`}
+                      className={`flex items-center gap-3 rounded-lg px-3 py-2 ${
+                        location.pathname === `/manage/event/${eventId}/check-in`
+                          ? "bg-emerald-950 text-white"
+                          : "text-emerald-100 hover:bg-emerald-800 hover:text-white"
+                      }`}
+                    >
+                      <ShoppingCart className="h-4 w-4" />
+                      Check-in
+                    </Link>
+                  )}
+
+                  {hasPermission("eventOrders") && (
+                    <Link
+                      to={`/manage/event/${eventId}/orders`}
+                      className={`flex items-center gap-3 rounded-lg px-3 py-2 ${
+                        location.pathname === `/manage/event/${eventId}/orders`
+                          ? "bg-emerald-950 text-white"
+                          : "text-emerald-100 hover:bg-emerald-800 hover:text-white"
+                      }`}
+                    >
+                      <ShoppingCart className="h-4 w-4" />
+                      Pedidos
+                    </Link>
+                  )}
+
+                  {hasPermission("eventRaffles") && (
+                    <Link
+                      to={`/manage/event/${eventId}/raffles`}
+                      className={`flex items-center gap-3 rounded-lg px-3 py-2 ${
+                        location.pathname === `/manage/event/${eventId}/raffles`
+                          ? "bg-emerald-950 text-white"
+                          : "text-emerald-100 hover:bg-emerald-800 hover:text-white"
+                      }`}
+                    >
+                      <HelpCircle className="h-4 w-4" />
+                      Rifas
+                    </Link>
+                  )}
+
+                  {hasPermission("eventQuestions") && (
+                    <Link
+                      to={`/manage/event/${eventId}/questions`}
+                      className={`flex items-center gap-3 rounded-lg px-3 py-2 ${
+                        location.pathname === `/manage/event/${eventId}/questions`
+                          ? "bg-emerald-950 text-white"
+                          : "text-emerald-100 hover:bg-emerald-800 hover:text-white"
+                      }`}
+                    >
+                      <HelpCircle className="h-4 w-4" />
+                      Preguntas
+                    </Link>
+                  )}
+
+                  {hasPermission("eventPromoCodes") && (
+                    <Link
+                      to={`/manage/event/${eventId}/promo-codes`}
+                      className={`flex items-center gap-3 rounded-lg px-3 py-2 ${
+                        location.pathname === `/manage/event/${eventId}/promo-codes`
+                          ? "bg-emerald-950 text-white"
+                          : "text-emerald-100 hover:bg-emerald-800 hover:text-white"
+                      }`}
+                    >
+                      <Tag className="h-4 w-4" />
+                      Códigos promocionales
+                    </Link>
+                  )}
+
+                  {hasPermission("eventMessages") && (
+                    <Link
+                      to={`/manage/event/${eventId}/messages`}
+                      className={`flex items-center gap-3 rounded-lg px-3 py-2 ${
+                        location.pathname === `/manage/event/${eventId}/messages`
+                          ? "bg-emerald-950 text-white"
+                          : "text-emerald-100 hover:bg-emerald-800 hover:text-white"
+                      }`}
+                    >
+                      <MessageSquare className="h-4 w-4" />
+                      Mensajes
+                    </Link>
+                  )}
+
+                  {hasPermission("eventCapacity") && (
+                    <Link
+                      to={`/manage/event/${eventId}/capacity`}
+                      className={`flex items-center gap-3 rounded-lg px-3 py-2 ${
+                        location.pathname === `/manage/event/${eventId}/capacity`
+                          ? "bg-emerald-950 text-white"
+                          : "text-emerald-100 hover:bg-emerald-800 hover:text-white"
+                      }`}
+                    >
+                      <Users2 className="h-4 w-4" />
+                      Capacidad
+                    </Link>
+                  )}
+
+                  {hasPermission("eventRegistrationLists") && (
+                    <Link
+                      to={`/manage/event/${eventId}/registration-lists`}
+                      className={`flex items-center gap-3 rounded-lg px-3 py-2 ${
+                        location.pathname === `/manage/event/${eventId}/registration-lists`
+                          ? "bg-emerald-950 text-white"
+                          : "text-emerald-100 hover:bg-emerald-800 hover:text-white"
+                      }`}
+                    >
+                      <ClipboardList className="h-4 w-4" />
+                      Listas de registro
+                    </Link>
+                  )}
                 </div>
               </div>
 
               <div className="mt-6">
-                <h4 className="px-2 py-2 text-xs font-semibold text-gray-400">Herramientas</h4>
+                <h4 className="px-2 py-2 text-xs font-semibold text-emerald-100 uppercase tracking-wider">
+                  Herramientas
+                </h4>
                 <div className="grid gap-1">
-                  <Link
-                    to={`/manage/event/${eventId}/page-designer`}
-                    className={`flex items-center gap-3 rounded-lg px-3 py-2 ${
-                      location.pathname === `/manage/event/${eventId}/page-designer`
-                        ? "bg-gray-900 text-white"
-                        : "text-gray-300 hover:text-white"
-                    }`}
-                  >
-                    <Palette className="h-4 w-4" />
-                    Diseñador de página de inicio
-                  </Link>
+                  {hasPermission("eventPageDesigner") && (
+                    <Link
+                      to={`/manage/event/${eventId}/page-designer`}
+                      className={`flex items-center gap-3 rounded-lg px-3 py-2 ${
+                        location.pathname === `/manage/event/${eventId}/page-designer`
+                          ? "bg-emerald-950 text-white"
+                          : "text-emerald-100 hover:bg-emerald-800 hover:text-white"
+                      }`}
+                    >
+                      <Palette className="h-4 w-4" />
+                      Diseñador de página de inicio
+                    </Link>
+                  )}
                 </div>
               </div>
             </nav>
           </div>
 
-          <div className="border-t border-gray-600 p-4">
+          <div className="border-t border-emerald-800 p-4">
             <button
               onClick={logout}
-              className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-gray-300 hover:text-white"
+              className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-emerald-100 hover:bg-emerald-800 hover:text-white"
             >
               <LogOut className="h-4 w-4" />
               Cerrar sesión
@@ -277,4 +328,3 @@ export const MobileMenu = () => {
     </>
   )
 }
-

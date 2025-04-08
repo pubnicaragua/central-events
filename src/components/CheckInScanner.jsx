@@ -11,6 +11,7 @@ import { Badge } from "../components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs"
 import { Input } from "../components/ui/input"
 import { Label } from "../components/ui/label"
+import  useAuth  from "../hooks/useAuth"
 
 const CheckInScanner = ({ eventId, onSuccess }) => {
   const [scanning, setScanning] = useState(false)
@@ -25,6 +26,7 @@ const CheckInScanner = ({ eventId, onSuccess }) => {
   const [amenityUpdating, setAmenityUpdating] = useState({})
   const [quantities, setQuantities] = useState({})
   const scannerRef = useRef(null)
+  const { user } = useAuth()
 
   const startScanner = () => {
     setScanning(true)
@@ -169,6 +171,11 @@ const CheckInScanner = ({ eventId, onSuccess }) => {
     try {
       setLoadingAmenities(true)
 
+      // Obtener las amenidades del asistente, filtrando por el usuario actual si no es admin
+      const { data: userRoles } = await supabase.from("user_roles").select("role_id").eq("user_id", user?.id).single()
+
+      const isAdmin = userRoles?.role_id === 1
+
       // Obtener las amenidades del asistente
       const { data: amenitiesData, error: amenitiesError } = await supabase
         .from("amenities_attendees")
@@ -183,6 +190,7 @@ const CheckInScanner = ({ eventId, onSuccess }) => {
             description,
             price,
             section_id,
+            user_id,
             amenities_sections (
               id,
               name,
@@ -194,16 +202,24 @@ const CheckInScanner = ({ eventId, onSuccess }) => {
 
       if (amenitiesError) throw amenitiesError
 
+      // Filtrar amenidades por usuario si no es admin
+      let filteredAmenities = amenitiesData
+      if (!isAdmin && user?.id) {
+        filteredAmenities = amenitiesData.filter(
+          (item) => !item.amenities.user_id || item.amenities.user_id === user.id,
+        )
+      }
+
       // Inicializar el estado de cantidades
       const initialQuantities = {}
-      amenitiesData.forEach((item) => {
+      filteredAmenities.forEach((item) => {
         initialQuantities[item.id] = 0
       })
       setQuantities(initialQuantities)
 
       // Agrupar por sección
       const grouped = {}
-      amenitiesData.forEach((item) => {
+      filteredAmenities.forEach((item) => {
         const section = item.amenities?.amenities_sections
         if (!section) return
 
@@ -223,6 +239,7 @@ const CheckInScanner = ({ eventId, onSuccess }) => {
           total: item.total,
           is_active: item.is_active,
           price: item.amenities.price,
+          user_id: item.amenities.user_id,
         })
       })
 
@@ -252,6 +269,13 @@ const CheckInScanner = ({ eventId, onSuccess }) => {
 
     try {
       setAmenityUpdating((prev) => ({ ...prev, [amenityId]: true }))
+
+      // Verificar si el usuario tiene permiso para esta amenidad
+      const amenityToUpdate = amenities.flatMap((section) => section.amenities).find((a) => a.id === amenityId)
+
+      if (amenityToUpdate && amenityToUpdate.user_id && amenityToUpdate.user_id !== user?.id) {
+        throw new Error("No tienes permiso para actualizar esta amenidad")
+      }
 
       // Actualizar la cantidad en la base de datos
       const { error } = await supabase
@@ -420,7 +444,11 @@ const CheckInScanner = ({ eventId, onSuccess }) => {
                     <span>Cargando amenidades...</span>
                   </div>
                 ) : amenities.length === 0 ? (
-                  <div className="text-center py-6 text-gray-500">Este asistente no tiene amenidades asignadas</div>
+                  <div className="text-center py-6 text-gray-500">
+                    {user?.id
+                      ? "No hay amenidades asignadas a este asistente que puedas gestionar"
+                      : "Este asistente no tiene amenidades asignadas"}
+                  </div>
                 ) : (
                   <div className="space-y-6">
                     {amenities.map((group) => (
@@ -519,4 +547,3 @@ const CheckInScanner = ({ eventId, onSuccess }) => {
 }
 
 export default CheckInScanner
-
