@@ -7,6 +7,7 @@ import NotificationSettings from "../components/event-settings/NotificationSetti
 import OtherSettings from "../components/event-settings/OtherSettings"
 import LocationSettings from "../components/event-settings/LocationSettings";
 import SeoSettings from "../components/event-settings/SeoSettings"
+import DressCode from "../components/event-settings/DressCode";
 import PrintError from "../utils/helpers"
 import { ArrowLeft } from "lucide-react";
 
@@ -43,6 +44,7 @@ function EventSettings() {
                         seo_config:seo_config_id(*),
                         notf_config:notf_config_id(*),
                         other_config:other_config_id(*)
+                        dress_code:dress_code_id(*)
                       `)
                     .eq("event_id", eventId)
                     .single()
@@ -88,6 +90,12 @@ function EventSettings() {
             <div className="space-y-6">
                 <BasicDetails event={event} eventId={eventId} supabase={supabase} />
                 <LocationSettings
+                    eventConfig={eventConfig}
+                    eventId={eventId}
+                    supabase={supabase}
+                    setEventConfig={setEventConfig}
+                />
+                <DressCode
                     eventConfig={eventConfig}
                     eventId={eventId}
                     supabase={supabase}
