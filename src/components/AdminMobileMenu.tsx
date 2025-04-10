@@ -5,6 +5,7 @@ import { X, Menu, CalendarPlus, UserPlus, Lock, UserRound, Bell, LogOut } from "
 import { Link, useLocation } from "react-router-dom"
 import { useMobile } from "../hooks/useMobile"
 import useAuth from "../hooks/useAuth"
+import LogoutButton from "./LogoutButton"
 
 export const AdminMobileMenu = () => {
     const [isOpen, setIsOpen] = useState(false)
@@ -60,7 +61,7 @@ export const AdminMobileMenu = () => {
                     <div className="flex h-[60px] items-center justify-between border-b border-emerald-800 px-6">
                         <Link to="/admin/events" className="flex items-center gap-2 font-semibold text-white">
                             <img src="/logo.png" alt="Logo" className="h-22 w-28" />
-                           
+
                         </Link>
                         {/* Close button inside sidebar */}
                         <button
@@ -83,8 +84,8 @@ export const AdminMobileMenu = () => {
                                         <Link
                                             to="/admin/events"
                                             className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-colors duration-200 ${location.pathname === "/admin/events"
-                                                    ? "bg-emerald-950 text-white font-medium"
-                                                    : "text-emerald-100 hover:bg-emerald-800 hover:text-white"
+                                                ? "bg-emerald-950 text-white font-medium"
+                                                : "text-emerald-100 hover:bg-emerald-800 hover:text-white"
                                                 }`}
                                         >
                                             <CalendarPlus className="h-4 w-4" />
@@ -96,8 +97,8 @@ export const AdminMobileMenu = () => {
                                         <Link
                                             to="/admin/users"
                                             className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-colors duration-200 ${location.pathname === "/admin/users"
-                                                    ? "bg-emerald-950 text-white font-medium"
-                                                    : "text-emerald-100 hover:bg-emerald-800 hover:text-white"
+                                                ? "bg-emerald-950 text-white font-medium"
+                                                : "text-emerald-100 hover:bg-emerald-800 hover:text-white"
                                                 }`}
                                         >
                                             <UserPlus className="h-4 w-4" />
@@ -109,8 +110,8 @@ export const AdminMobileMenu = () => {
                                         <Link
                                             to="/admin/roles"
                                             className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-colors duration-200 ${location.pathname === "/admin/roles"
-                                                    ? "bg-emerald-950 text-white font-medium"
-                                                    : "text-emerald-100 hover:bg-emerald-800 hover:text-white"
+                                                ? "bg-emerald-950 text-white font-medium"
+                                                : "text-emerald-100 hover:bg-emerald-800 hover:text-white"
                                                 }`}
                                         >
                                             <Lock className="h-4 w-4" />
@@ -122,8 +123,8 @@ export const AdminMobileMenu = () => {
                                         <Link
                                             to="/admin/profile"
                                             className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-colors duration-200 ${location.pathname === "/admin/profile"
-                                                    ? "bg-emerald-950 text-white font-medium"
-                                                    : "text-emerald-100 hover:bg-emerald-800 hover:text-white"
+                                                ? "bg-emerald-950 text-white font-medium"
+                                                : "text-emerald-100 hover:bg-emerald-800 hover:text-white"
                                                 }`}
                                         >
                                             <UserRound className="h-4 w-4" />
@@ -135,8 +136,8 @@ export const AdminMobileMenu = () => {
                                         <Link
                                             to="/admin/notifications"
                                             className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-colors duration-200 ${location.pathname === "/admin/notifications"
-                                                    ? "bg-emerald-950 text-white font-medium"
-                                                    : "text-emerald-100 hover:bg-emerald-800 hover:text-white"
+                                                ? "bg-emerald-950 text-white font-medium"
+                                                : "text-emerald-100 hover:bg-emerald-800 hover:text-white"
                                                 }`}
                                         >
                                             <Bell className="h-4 w-4" />
@@ -148,14 +149,14 @@ export const AdminMobileMenu = () => {
                         </nav>
                     </div>
 
-                    <div className="border-t border-emerald-800 p-4">
-                        <button
-                            onClick={logout}
-                            className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-emerald-100 hover:bg-emerald-800 hover:text-white"
-                        >
-                            <LogOut className="h-4 w-4" />
-                            Cerrar sesión
-                        </button>
+                    <div className="mt-6 pt-4 border-t border-emerald-800">
+                        <div className="grid gap-1">
+                            <div
+                                className={`flex items-center gap-3 rounded-lg px-3 py-2 text-emerald-100 hover:bg-emerald-800 hover:text-white transition-colors duration-200`}
+                            >
+                                <LogoutButton />
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
