@@ -14,7 +14,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Search, UserCheck, UserX, RefreshCw } from "lucide-react"
 import CheckInScanner from "../components/CheckInScanner"
 import UserMenu from "../components/UserMenu"
-import  useAuth  from "../hooks/useAuth"
+import useAuth from "../hooks/useAuth"
 
 const CheckInPage = () => {
     const { eventId } = useParams()
@@ -208,13 +208,12 @@ const CheckInPage = () => {
 
     return (
         <div className="container mx-auto py-6 px-4">
-            <div className="flex justify-between items-center mb-6">
-                <div>
-                    <h1 className="text-2xl font-bold mb-2">Check-in de asistentes</h1>
-                    {event && <p className="text-gray-600">Evento: {event.name}</p>}
-                </div>
-                <UserMenu />
+
+            <div className="my-6">
+                <h1 className="text-2xl font-bold mb-2">Check-in de asistentes</h1>
+                {event && <p className="text-gray-600">Evento: {event.name}</p>}
             </div>
+
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                 <Card>

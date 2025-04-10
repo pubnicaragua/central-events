@@ -3,15 +3,14 @@
 import { useState, useRef, useEffect } from "react"
 import { Html5QrcodeScanner } from "html5-qrcode"
 import supabase from "../api/supabase"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "../components/ui/card"
-import { Button } from "../components/ui/button"
-import { Alert, AlertDescription, AlertTitle } from "../components/ui/alert"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "./ui/card"
+import { Button } from "./ui/button"
+import { Alert, AlertDescription, AlertTitle } from "./ui/alert"
 import { Loader2, CheckCircle2, User, Mail, Ticket, MinusCircle } from "lucide-react"
-import { Badge } from "../components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs"
-import { Input } from "../components/ui/input"
-import { Label } from "../components/ui/label"
-import  useAuth  from "../hooks/useAuth"
+import { Badge } from "./ui/badge"
+import { Input } from "./ui/input"
+import { Label } from "./ui/label"
+import useAuth from "../hooks/useAuth"
 
 const CheckInScanner = ({ eventId, onSuccess }) => {
   const [scanning, setScanning] = useState(false)
@@ -25,8 +24,90 @@ const CheckInScanner = ({ eventId, onSuccess }) => {
   const [loadingAmenities, setLoadingAmenities] = useState(false)
   const [amenityUpdating, setAmenityUpdating] = useState({})
   const [quantities, setQuantities] = useState({})
+  const [hasAssignedAmenities, setHasAssignedAmenities] = useState(false)
+  const [autoReduceResult, setAutoReduceResult] = useState(null)
   const scannerRef = useRef(null)
   const { user } = useAuth()
+
+  // Check if employee has assigned amenities when component mounts
+  useEffect(() => {
+    if (user?.id) {
+      checkEmployeeHasAssignedAmenities(user.id)
+        .then((result) => {
+          setHasAssignedAmenities(result)
+          // Set the default active tab based on whether the employee has assigned amenities
+          setActiveTab(result ? "amenities" : "check-in")
+        })
+        .catch((err) => console.error("Error checking employee amenities:", err))
+    }
+  }, [user])
+
+  const checkEmployeeHasAssignedAmenities = async (userId) => {
+    try {
+      if (!userId) return false
+
+      const { data, error } = await supabase.from("amenities").select("id").eq("user_id", userId).limit(1)
+
+      if (error) throw error
+      return data && data.length > 0
+    } catch (err) {
+      console.error("Error checking employee amenities:", err)
+      return false
+    }
+  }
+
+  const autoReduceAmenity = async (attendeeId, userId) => {
+    try {
+      // Get amenities assigned to this employee
+      const { data: employeeAmenities, error: amenitiesError } = await supabase
+        .from("amenities")
+        .select("id")
+        .eq("user_id", userId)
+
+      if (amenitiesError) throw amenitiesError
+
+      if (!employeeAmenities || employeeAmenities.length === 0) return false
+
+      // Get the attendee's amenities that match this employee's assigned amenities
+      const { data: attendeeAmenities, error: attendeeAmenitiesError } = await supabase
+        .from("amenities_attendees")
+        .select("id, quantity, amenities(id, name)")
+        .eq("attendee_id", attendeeId)
+        .gt("quantity", 0)
+
+      if (attendeeAmenitiesError) throw attendeeAmenitiesError
+
+      if (!attendeeAmenities || attendeeAmenities.length === 0) return false
+
+      // Filter to only include amenities assigned to this employee
+      const matchingAmenities = attendeeAmenities.filter((item) =>
+        employeeAmenities.some((ea) => ea.id === item.amenities.id),
+      )
+
+      if (matchingAmenities.length === 0) return false
+
+      // Reduce the first available amenity by 1
+      const amenityToReduce = matchingAmenities[0]
+
+      const { error: updateError } = await supabase
+        .from("amenities_attendees")
+        .update({
+          quantity: amenityToReduce.quantity - 1,
+        })
+        .eq("id", amenityToReduce.id)
+
+      if (updateError) throw updateError
+
+      return {
+        success: true,
+        amenityName: amenityToReduce.amenities.name,
+        newQuantity: amenityToReduce.quantity - 1,
+      }
+    } catch (err) {
+      console.error("Error auto-reducing amenity:", err)
+      return false
+    }
+  }
 
   const startScanner = () => {
     setScanning(true)
@@ -36,6 +117,7 @@ const CheckInScanner = ({ eventId, onSuccess }) => {
     setAttendee(null)
     setAmenities([])
     setQuantities({})
+    setAutoReduceResult(null)
 
     try {
       // Crear el escáner solo si no existe
@@ -103,6 +185,7 @@ const CheckInScanner = ({ eventId, onSuccess }) => {
     try {
       setLoading(true)
       setError(null)
+      setAutoReduceResult(null)
 
       // Intentar parsear los datos del QR
       let qrData
@@ -138,26 +221,56 @@ const CheckInScanner = ({ eventId, onSuccess }) => {
 
       setAttendee(attendeeData)
 
+      // Verificar si el empleado tiene amenidades asignadas
+      const hasAmenities = await checkEmployeeHasAssignedAmenities(user?.id)
+      setHasAssignedAmenities(hasAmenities)
+
       // Cargar las amenidades del asistente
       await fetchAttendeeAmenities(qrData.attendeeId)
 
-      // Verificar si ya hizo check-in
-      if (!attendeeData.checked_in) {
-        // Actualizar el estado de check-in
-        const { error: updateError } = await supabase
-          .from("attendants")
-          .update({
+      // Lógica basada en si el empleado tiene amenidades asignadas
+      if (hasAmenities) {
+        // Si el empleado tiene amenidades asignadas, no puede hacer check-in
+        // Verificar si el asistente ya hizo check-in
+        if (!attendeeData.checked_in) {
+          throw new Error("El asistente debe hacer check-in primero con un empleado de registro.")
+        } else {
+          // Si ya hizo check-in, reducir automáticamente la amenidad
+          const result = await autoReduceAmenity(qrData.attendeeId, user?.id)
+          if (result && result.success) {
+            setAutoReduceResult(result)
+            setActiveTab("amenities") // Cambiar a la pestaña de amenidades
+            setSuccess(true)
+          } else {
+            throw new Error("Ya no tienes amenidades disponibles. Verifica con el organizador si tienes, si el código QR falla, puede hacerlo manualmente.")
+          }
+        }
+      } else {
+        // Si el empleado no tiene amenidades asignadas, solo puede hacer check-in
+        if (!attendeeData.checked_in) {
+          // Actualizar el estado de check-in
+          const { error: updateError } = await supabase
+            .from("attendants")
+            .update({
+              checked_in: true,
+              checked_in_at: new Date().toISOString(),
+            })
+            .eq("id", qrData.attendeeId)
+
+          if (updateError) {
+            throw new Error("Error al actualizar el estado de check-in.")
+          }
+
+          // Actualizar el estado local del asistente
+          setAttendee({
+            ...attendeeData,
             checked_in: true,
             checked_in_at: new Date().toISOString(),
           })
-          .eq("id", qrData.attendeeId)
-
-        if (updateError) {
-          throw new Error("Error al actualizar el estado de check-in.")
         }
+        setSuccess(true)
       }
 
-      setSuccess(true)
       if (onSuccess) onSuccess(attendeeData)
     } catch (err) {
       console.error("Error en el check-in:", err)
@@ -205,9 +318,7 @@ const CheckInScanner = ({ eventId, onSuccess }) => {
       // Filtrar amenidades por usuario si no es admin
       let filteredAmenities = amenitiesData
       if (!isAdmin && user?.id) {
-        filteredAmenities = amenitiesData.filter(
-          (item) => !item.amenities.user_id || item.amenities.user_id === user.id,
-        )
+        filteredAmenities = amenitiesData.filter((item) => item.amenities.user_id === user.id)
       }
 
       // Inicializar el estado de cantidades
@@ -350,6 +461,150 @@ const CheckInScanner = ({ eventId, onSuccess }) => {
     }
   }, [])
 
+  // Renderizar el contenido de la tarjeta según si el empleado tiene amenidades asignadas
+  const renderCardContent = () => {
+    if (!success || !attendee) return null
+
+    if (hasAssignedAmenities) {
+      // Si el empleado tiene amenidades asignadas, solo mostrar la pestaña de amenidades
+      return (
+        <>
+          <CardContent>
+            <h3 className="font-medium text-lg mb-4">Gestión de Amenidades</h3>
+
+            {loadingAmenities ? (
+              <div className="flex items-center justify-center p-4">
+                <Loader2 className="h-6 w-6 animate-spin mr-2" />
+                <span>Cargando amenidades...</span>
+              </div>
+            ) : amenities.length === 0 ? (
+              <div className="text-center py-6 text-gray-500">
+                No hay amenidades asignadas a este asistente que puedas gestionar
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {autoReduceResult && (
+                  <Alert className="bg-green-50 border-green-200 mb-4">
+                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                    <AlertTitle>Amenidad reducida automáticamente</AlertTitle>
+                    <AlertDescription>Se ha reducido 1 unidad de {autoReduceResult.amenityName}</AlertDescription>
+                  </Alert>
+                )}
+
+                {amenities.map((group) => (
+                  <div key={group.section.id} className="border rounded-md overflow-hidden">
+                    <div className="bg-gray-50 p-3 border-b flex items-center justify-between">
+                      <div>
+                        <h3 className="font-medium">{group.section.name}</h3>
+                        {group.section.is_default && (
+                          <Badge variant="outline" className="mt-1">
+                            Sección predeterminada
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="divide-y">
+                      {group.amenities.map((amenity) => (
+                        <div key={amenity.id} className="p-3">
+                          <div className="flex items-center justify-between mb-2">
+                            <div>
+                              <div className="font-medium">{amenity.name}</div>
+                              {amenity.description && (
+                                <div className="text-sm text-gray-500">{amenity.description}</div>
+                              )}
+                            </div>
+                            <div className="text-right">
+                              {amenity.price > 0 && <div className="font-medium">${amenity.price.toFixed(2)}</div>}
+                              <Badge
+                                className={`${amenity.quantity > 0 ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}`}
+                              >
+                                {amenity.quantity} disponible{amenity.quantity !== 1 ? "s" : ""}
+                              </Badge>
+                            </div>
+                          </div>
+
+                          {amenity.quantity > 0 && (
+                            <div className="flex flex-col gap-2 mt-3">
+                              <p className="text-xs text-gray-500 mb-1">
+                                Da click aquí por si el QR no funciona correctamente.
+                              </p>
+                              <div className="flex items-center gap-2">
+                                <Label htmlFor={`quantity-${amenity.id}`} className="sr-only">
+                                  Cantidad a consumir
+                                </Label>
+                                <Input
+                                  id={`quantity-${amenity.id}`}
+                                  type="number"
+                                  min="0"
+                                  max={amenity.quantity}
+                                  value={quantities[amenity.id] || 0}
+                                  onChange={(e) => handleQuantityChange(amenity.id, e.target.value)}
+                                  className="w-20"
+                                />
+                                <Button
+                                  onClick={() =>
+                                    updateAmenityQuantity(amenity.id, amenity.quantity, quantities[amenity.id])
+                                  }
+                                  disabled={!quantities[amenity.id] || amenityUpdating[amenity.id]}
+                                  size="sm"
+                                >
+                                  {amenityUpdating[amenity.id] ? (
+                                    <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                                  ) : (
+                                    <MinusCircle className="h-4 w-4 mr-1" />
+                                  )}
+                                  Consumir
+                                </Button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </>
+      )
+    } else {
+      // Si el empleado no tiene amenidades asignadas, solo mostrar la pestaña de información
+      return (
+        <>
+          <CardContent>
+            <h3 className="font-medium text-lg mb-2">Información del asistente</h3>
+            <div className="space-y-3">
+              <div className="flex items-start gap-3">
+                <User className="w-5 h-5 text-gray-400 mt-0.5" />
+                <div>
+                  <p className="font-medium">
+                    {attendee.name} {attendee.second_name || ""}
+                  </p>
+                </div>
+              </div>
+
+              {attendee.email && (
+                <div className="flex items-start gap-3">
+                  <Mail className="w-5 h-5 text-gray-400 mt-0.5" />
+                  <p>{attendee.email}</p>
+                </div>
+              )}
+
+              {attendee.tickets && (
+                <div className="flex items-start gap-3">
+                  <Ticket className="w-5 h-5 text-gray-400 mt-0.5" />
+                  <p>{attendee.tickets.name}</p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </>
+      )
+    }
+  }
+
   return (
     <div className="space-y-4">
       {!scanning && !success && !loading && (
@@ -392,138 +647,19 @@ const CheckInScanner = ({ eventId, onSuccess }) => {
             <div className="flex items-center">
               <CheckCircle2 className="h-6 w-6 text-green-600 mr-2" />
               <div>
-                <CardTitle>Check-in exitoso</CardTitle>
-                <CardDescription>El asistente ha sido registrado correctamente.</CardDescription>
+                <CardTitle>{hasAssignedAmenities ? "Amenidad reducida" : "Check-in exitoso"}</CardTitle>
+                <CardDescription>
+                  {hasAssignedAmenities
+                    ? autoReduceResult
+                      ? `Se ha reducido 1 unidad de ${autoReduceResult.amenityName}`
+                      : "El asistente ha sido verificado correctamente."
+                    : "El asistente ha sido registrado correctamente."}
+                </CardDescription>
               </div>
             </div>
           </CardHeader>
 
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid grid-cols-2 w-full">
-              <TabsTrigger value="check-in">Información</TabsTrigger>
-              <TabsTrigger value="amenities">Amenidades</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="check-in" className="pt-4">
-              <CardContent>
-                <h3 className="font-medium text-lg mb-2">Información del asistente</h3>
-                <div className="space-y-3">
-                  <div className="flex items-start gap-3">
-                    <User className="w-5 h-5 text-gray-400 mt-0.5" />
-                    <div>
-                      <p className="font-medium">
-                        {attendee.name} {attendee.second_name || ""}
-                      </p>
-                    </div>
-                  </div>
-
-                  {attendee.email && (
-                    <div className="flex items-start gap-3">
-                      <Mail className="w-5 h-5 text-gray-400 mt-0.5" />
-                      <p>{attendee.email}</p>
-                    </div>
-                  )}
-
-                  {attendee.tickets && (
-                    <div className="flex items-start gap-3">
-                      <Ticket className="w-5 h-5 text-gray-400 mt-0.5" />
-                      <p>{attendee.tickets.name}</p>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </TabsContent>
-
-            <TabsContent value="amenities">
-              <CardContent>
-                <h3 className="font-medium text-lg mb-4">Gestión de Amenidades</h3>
-
-                {loadingAmenities ? (
-                  <div className="flex items-center justify-center p-4">
-                    <Loader2 className="h-6 w-6 animate-spin mr-2" />
-                    <span>Cargando amenidades...</span>
-                  </div>
-                ) : amenities.length === 0 ? (
-                  <div className="text-center py-6 text-gray-500">
-                    {user?.id
-                      ? "No hay amenidades asignadas a este asistente que puedas gestionar"
-                      : "Este asistente no tiene amenidades asignadas"}
-                  </div>
-                ) : (
-                  <div className="space-y-6">
-                    {amenities.map((group) => (
-                      <div key={group.section.id} className="border rounded-md overflow-hidden">
-                        <div className="bg-gray-50 p-3 border-b flex items-center justify-between">
-                          <div>
-                            <h3 className="font-medium">{group.section.name}</h3>
-                            {group.section.is_default && (
-                              <Badge variant="outline" className="mt-1">
-                                Sección predeterminada
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="divide-y">
-                          {group.amenities.map((amenity) => (
-                            <div key={amenity.id} className="p-3">
-                              <div className="flex items-center justify-between mb-2">
-                                <div>
-                                  <div className="font-medium">{amenity.name}</div>
-                                  {amenity.description && (
-                                    <div className="text-sm text-gray-500">{amenity.description}</div>
-                                  )}
-                                </div>
-                                <div className="text-right">
-                                  {amenity.price > 0 && <div className="font-medium">${amenity.price.toFixed(2)}</div>}
-                                  <Badge
-                                    className={`${amenity.quantity > 0 ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}`}
-                                  >
-                                    {amenity.quantity} disponible{amenity.quantity !== 1 ? "s" : ""}
-                                  </Badge>
-                                </div>
-                              </div>
-
-                              {amenity.quantity > 0 && (
-                                <div className="flex items-center gap-2 mt-3">
-                                  <Label htmlFor={`quantity-${amenity.id}`} className="sr-only">
-                                    Cantidad a consumir
-                                  </Label>
-                                  <Input
-                                    id={`quantity-${amenity.id}`}
-                                    type="number"
-                                    min="0"
-                                    max={amenity.quantity}
-                                    value={quantities[amenity.id] || 0}
-                                    onChange={(e) => handleQuantityChange(amenity.id, e.target.value)}
-                                    className="w-20"
-                                  />
-                                  <Button
-                                    onClick={() =>
-                                      updateAmenityQuantity(amenity.id, amenity.quantity, quantities[amenity.id])
-                                    }
-                                    disabled={!quantities[amenity.id] || amenityUpdating[amenity.id]}
-                                    size="sm"
-                                  >
-                                    {amenityUpdating[amenity.id] ? (
-                                      <Loader2 className="h-4 w-4 animate-spin mr-1" />
-                                    ) : (
-                                      <MinusCircle className="h-4 w-4 mr-1" />
-                                    )}
-                                    Consumir
-                                  </Button>
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </TabsContent>
-          </Tabs>
+          {renderCardContent()}
 
           <CardFooter className="pt-2 pb-4">
             <Button
@@ -533,6 +669,7 @@ const CheckInScanner = ({ eventId, onSuccess }) => {
                 setResult(null)
                 setAmenities([])
                 setQuantities({})
+                setAutoReduceResult(null)
                 startScanner()
               }}
               className="w-full"
