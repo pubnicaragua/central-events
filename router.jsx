@@ -35,6 +35,7 @@ import AccessDenied from "./src/views/AccessDenied"
 import ForgotPassword from "./src/views/ForgotPassword"
 import ResetPassword from "./src/views/ResetPassword"
 import Employees from "./src/views/EventEmployeesPage"
+import ModulesPage from "./src/views/ModulesPage"
 
 // Definición de permisos por rol
 // 1: Admin, 2: Organizador, 3: Asistente, 4: Empleado
@@ -44,6 +45,7 @@ const ROLE_PERMISSIONS = {
   adminProfile: [1, 2, 4],
   adminUsers: [1],
   adminRoles: [1],
+  adminModules: [1],
   adminNotifications: [1],
 
   // Rutas de gestión de eventos
@@ -146,6 +148,16 @@ const router = createBrowserRouter([
               {
                 path: "",
                 element: <RolesPage />,
+              },
+            ],
+          },
+          {
+            path: "admin/modules",
+            element: <ProtectedRoute allowedRoles={ROLE_PERMISSIONS.adminModules} />,
+            children: [
+              {
+                path: "",
+                element: <ModulesPage />,
               },
             ],
           },
