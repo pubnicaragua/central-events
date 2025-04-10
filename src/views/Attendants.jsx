@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useParams } from "react-router-dom"
 import supabase from "../api/supabase"
 import useAuth from "../hooks/useAuth"
-import { Edit, Eye, QrCode, Search, Trash, Download, Upload } from "lucide-react"
+import { Edit, Eye, QrCode, Search, Trash, Download, Upload, Mail } from "lucide-react"
 import { Button } from "../components/ui/button"
 import { Input } from "../components/ui/input"
 import { Badge } from "../components/ui/badge"
@@ -14,6 +14,7 @@ import EditarAsistenteModal from "../components/attendants/editar-asistente-moda
 import VerAmenidadesModal from "../components/attendants/ver-amenidades-modal"
 import QrCodeModal from "../components/attendants/qr-code-modal"
 import ImportarAsistentesModal from "../components/attendants/importar-asistentes-modal"
+import BulkEmailModal from "../components/attendants/bulk-email-modal"
 
 const AsistentesPage = () => {
   const { eventId } = useParams()
@@ -24,12 +25,13 @@ const AsistentesPage = () => {
   const [amenidadesModalOpen, setAmenidadesModalOpen] = useState(false)
   const [qrCodeModalOpen, setQrCodeModalOpen] = useState(false)
   const [importarModalOpen, setImportarModalOpen] = useState(false)
+  const [bulkEmailModalOpen, setBulkEmailModalOpen] = useState(false)
   const [selectedAttendee, setSelectedAttendee] = useState(null)
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [tickets, setTickets] = useState([])
 
-  const { isAdmin } = useAuth();
+  const { isAdmin } = useAuth()
 
   // Cargar asistentes
   useEffect(() => {
@@ -259,7 +261,7 @@ const AsistentesPage = () => {
   const getchecked_inBadge = (checked_in) => {
     if (checked_in) {
       return <Badge className="bg-green-500">Confirmado</Badge>
-    } else if (checked_in === false) {
+    } else {
       return <Badge variant="outline">No confirmado</Badge>
     }
   }
@@ -269,6 +271,14 @@ const AsistentesPage = () => {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Asistentes</h1>
         <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setBulkEmailModalOpen(true)}
+            className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
+          >
+            <Mail className="w-4 h-4" />
+            Enviar correos
+          </Button>
           <Button variant="outline" onClick={handleExport} className="flex items-center gap-2">
             <Download className="w-4 h-4" />
             Exportar
@@ -277,7 +287,7 @@ const AsistentesPage = () => {
             <Upload className="w-4 h-4" />
             Importar Excel
           </Button>
-          <Button onClick={() => setAgregarModalOpen(true)} className="bg-purple-600 hover:bg-purple-700 text-white">
+          <Button onClick={() => setAgregarModalOpen(true)} className="bg-green-600 hover:bg-green-700 text-white">
             Agregar
           </Button>
         </div>
@@ -363,7 +373,7 @@ const AsistentesPage = () => {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            className="text-black hover:text-gray-700 hover:bg-gray-100"
                             onClick={() => {
                               setSelectedAttendee(attendee)
                               setConfirmDialogOpen(true)
@@ -428,6 +438,14 @@ const AsistentesPage = () => {
         tickets={tickets}
       />
 
+      {/* Nuevo modal para enviar correos masivos */}
+      <BulkEmailModal
+        isOpen={bulkEmailModalOpen}
+        onClose={() => setBulkEmailModalOpen(false)}
+        attendees={attendees}
+        eventId={eventId}
+      />
+
       {/* Modal de confirmación para eliminar */}
       <ConfirmDialog
         isOpen={confirmDialogOpen}
@@ -446,4 +464,3 @@ const AsistentesPage = () => {
 }
 
 export default AsistentesPage
-

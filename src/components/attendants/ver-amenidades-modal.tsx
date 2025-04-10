@@ -117,9 +117,7 @@ const VerAmenidadesModal: React.FC<VerAmenidadesModalProps> = ({ isOpen, onClose
                       </div>
                       <div className="text-right">
                         {amenity.price > 0 && <div className="font-medium">${amenity.price.toFixed(2)}</div>}
-                        {amenity.quantity > 1 && (
-                          <div className="text-sm text-gray-500">Cantidad: {amenity.quantity}</div>
-                        )}
+                        <div className="text-sm text-gray-500">Cantidad: {amenity.quantity}</div>
                         {!amenity.is_active && (
                           <Badge variant="outline" className="bg-gray-100">
                             Inactiva
@@ -135,7 +133,9 @@ const VerAmenidadesModal: React.FC<VerAmenidadesModalProps> = ({ isOpen, onClose
         )}
 
         <DialogFooter>
-          <Button onClick={onClose}>Cerrar</Button>
+          <Button onClick={onClose} className="bg-green-600 hover:bg-green-700">
+            Cerrar
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -143,4 +143,3 @@ const VerAmenidadesModal: React.FC<VerAmenidadesModalProps> = ({ isOpen, onClose
 }
 
 export default VerAmenidadesModal
-

@@ -324,7 +324,7 @@ const AgregarAsistenteModal: React.FC<AgregarAsistenteModalProps> = ({ isOpen, o
               <Button type="button" variant="outline" onClick={handleClose} disabled={isSubmitting}>
                 Cancelar
               </Button>
-              <Button type="submit" disabled={isSubmitting} className="bg-purple-600 hover:bg-purple-700">
+              <Button type="submit" disabled={isSubmitting} className="bg-green-600 hover:bg-green-700">
                 {isSubmitting ? "Guardando..." : "Guardar asistente"}
               </Button>
             </DialogFooter>
@@ -336,4 +336,3 @@ const AgregarAsistenteModal: React.FC<AgregarAsistenteModalProps> = ({ isOpen, o
 }
 
 export default AgregarAsistenteModal
-

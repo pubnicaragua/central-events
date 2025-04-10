@@ -32,8 +32,8 @@ const EditarAsistenteModal: React.FC<EditarAsistenteModalProps> = ({
     name: "",
     second_name: "",
     email: "",
-    status: "",
-    order_id: null,
+    checked_in: false,
+    ticket_id: null,
   })
   const [sections, setSections] = useState([])
   const [selectedSection, setSelectedSection] = useState(null)
@@ -50,8 +50,8 @@ const EditarAsistenteModal: React.FC<EditarAsistenteModalProps> = ({
         name: attendee.name || "",
         second_name: attendee.second_name || "",
         email: attendee.email || "",
-        status: attendee.status || "no confirmado",
-        order_id: attendee.order_id,
+        checked_in: attendee.checked_in || false,
+        ticket_id: attendee.ticket_id || null,
       })
 
       fetchSections()
@@ -144,7 +144,13 @@ const EditarAsistenteModal: React.FC<EditarAsistenteModalProps> = ({
   }
 
   const handleSelectChange = (name: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [name]: value }))
+    if (name === "checked_in") {
+      setFormData((prev) => ({ ...prev, [name]: value === "true" }))
+    } else if (name === "ticket_id") {
+      setFormData((prev) => ({ ...prev, [name]: value === "null" ? null : Number.parseInt(value) }))
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }))
+    }
   }
 
   const handleAmenityToggle = (amenity) => {
@@ -247,24 +253,26 @@ const EditarAsistenteModal: React.FC<EditarAsistenteModalProps> = ({
               </div>
 
               <div>
-                <Label htmlFor="status">Estado</Label>
-                <Select value={formData.status} onValueChange={(value) => handleSelectChange("status", value)}>
+                <Label htmlFor="checked_in">Check-in</Label>
+                <Select
+                  value={formData.checked_in?.toString()}
+                  onValueChange={(value) => handleSelectChange("checked_in", value)}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccionar estado" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="no confirmado">No confirmado</SelectItem>
-                    <SelectItem value="confirmado">Confirmado</SelectItem>
-                    <SelectItem value="cancelado">Cancelado</SelectItem>
+                    <SelectItem value="true">Confirmado</SelectItem>
+                    <SelectItem value="false">No confirmado</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div>
-                <Label htmlFor="ticket">Ticket</Label>
+                <Label htmlFor="ticket_id">Ticket</Label>
                 <Select
-                  value={formData.order_id?.toString() || ""}
-                  onValueChange={(value) => handleSelectChange("order_id", value)}
+                  value={formData.ticket_id?.toString() || "null"}
+                  onValueChange={(value) => handleSelectChange("ticket_id", value)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccionar ticket" />
@@ -356,7 +364,7 @@ const EditarAsistenteModal: React.FC<EditarAsistenteModalProps> = ({
               <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
                 Cancelar
               </Button>
-              <Button type="submit" disabled={isSubmitting} className="bg-purple-600 hover:bg-purple-700">
+              <Button type="submit" disabled={isSubmitting} className="bg-green-600 hover:bg-green-700">
                 {isSubmitting ? "Guardando..." : "Guardar cambios"}
               </Button>
             </DialogFooter>
@@ -368,4 +376,3 @@ const EditarAsistenteModal: React.FC<EditarAsistenteModalProps> = ({
 }
 
 export default EditarAsistenteModal
-
