@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Link } from "react-router-dom"
 import { toast } from "react-hot-toast"
-import { MessageSquareShare, Pencil, Trash, Eye } from "lucide-react"
+import { Pencil, Trash, Eye } from "lucide-react"
 import EditTicketModal from "./EditTicketModal"
 import PropTypes from "prop-types"
 import useAuth from "../../hooks/useAuth"
@@ -143,14 +143,6 @@ function TicketList({ tickets, loading, onUpdate, onDelete, eventId }) {
                             {isAdmin && (
                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <div className="flex items-center justify-end space-x-2">
-                                        <Link
-                                            to={`/manage/event/${eventId}/messages`}
-                                            className="inline-flex items-center p-1.5 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
-                                            title="Mensaje a los asistentes"
-                                        >
-                                            <MessageSquareShare className="h-4 w-4" />
-                                        </Link>
-
                                         <button
                                             onClick={() => handleEditClick(ticket)}
                                             className="inline-flex items-center p-1.5 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"

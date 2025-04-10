@@ -204,7 +204,7 @@ function EditTicketModal({ ticket, isOpen, onClose, onSubmit }) {
                                         <input
                                             id="hide-before-edit"
                                             type="checkbox"
-                                            className="h-4 w-4 text-purple-600 rounded"
+                                            className="h-4 w-4 text-green-600 rounded"
                                             checked={ticketData.hide_before_sale_start}
                                             onChange={(e) => setTicketData({ ...ticketData, hide_before_sale_start: e.target.checked })}
                                         />
@@ -217,7 +217,7 @@ function EditTicketModal({ ticket, isOpen, onClose, onSubmit }) {
                                         <input
                                             id="hide-after-edit"
                                             type="checkbox"
-                                            className="h-4 w-4 text-purple-600 rounded"
+                                            className="h-4 w-4 text-green-600 rounded"
                                             checked={ticketData.hide_after_sale_end}
                                             onChange={(e) => setTicketData({ ...ticketData, hide_after_sale_end: e.target.checked })}
                                         />
@@ -230,7 +230,7 @@ function EditTicketModal({ ticket, isOpen, onClose, onSubmit }) {
                                         <input
                                             id="hide-sold-out-edit"
                                             type="checkbox"
-                                            className="h-4 w-4 text-purple-600 rounded"
+                                            className="h-4 w-4 text-green-600 rounded"
                                             checked={ticketData.hide_when_sold_out}
                                             onChange={(e) => setTicketData({ ...ticketData, hide_when_sold_out: e.target.checked })}
                                         />
@@ -243,7 +243,7 @@ function EditTicketModal({ ticket, isOpen, onClose, onSubmit }) {
                                         <input
                                             id="show-quantity-edit"
                                             type="checkbox"
-                                            className="h-4 w-4 text-purple-600 rounded"
+                                            className="h-4 w-4 text-green-600 rounded"
                                             checked={ticketData.show_available_quantity}
                                             onChange={(e) => setTicketData({ ...ticketData, show_available_quantity: e.target.checked })}
                                         />
@@ -259,7 +259,7 @@ function EditTicketModal({ ticket, isOpen, onClose, onSubmit }) {
                     <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                         <button
                             type="button"
-                            className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-purple-600 text-base font-medium text-white hover:bg-purple-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm"
+                            className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm"
                             onClick={handleSubmit}
                             disabled={isSubmitting}
                         >
@@ -285,5 +285,5 @@ EditTicketModal.propTypes = {
     ticket: PropTypes.func.isRequired,
     onClose: PropTypes.func.isRequired,
     isOpen: PropTypes.func.isRequired,
-    onSubmit: PropTypes.func.isRequired
-};
+    onSubmit: PropTypes.func.isRequired,
+}
