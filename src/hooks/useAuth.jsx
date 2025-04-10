@@ -1,93 +1,85 @@
 "use client"
 
-import { useContext, useMemo } from "react"
+import { useContext, useEffect, useState } from "react"
 import { AuthContext } from "../context/AuthContext"
+import supabase from "../api/supabase"
 
 export default function useAuth() {
-    const { user, userRole, loading } = useContext(AuthContext)
+    const { user, userRole, loading: authLoading } = useContext(AuthContext)
+    const [modulePermissions, setModulePermissions] = useState({})
+    const [loading, setLoading] = useState(true)
+
+    // Cargar permisos de módulos desde la base de datos
+    useEffect(() => {
+        const fetchModulePermissions = async () => {
+            if (!userRole) {
+                setLoading(false)
+                return
+            }
+
+            try {
+                // Obtener todos los módulos disponibles para inicializar con false
+                const { data: allModules, error: modulesError } = await supabase
+                    .from("modules")
+                    .select("module_key")
+                    .eq("is_enabled", true)
+
+                if (modulesError) throw modulesError
+
+                // Inicializar todos los permisos como false
+                const initialPermissions = {}
+                allModules.forEach((module) => {
+                    initialPermissions[module.module_key] = false
+                })
+
+                // Si es administrador (rol 1), dar acceso a todo
+                if (userRole === 1) {
+                    const fullAccess = {}
+                    allModules.forEach((module) => {
+                        fullAccess[module.module_key] = true
+                    })
+                    setModulePermissions(fullAccess)
+                    setLoading(false)
+                    return
+                }
+
+                // Para otros roles, obtener permisos específicos
+                const { data: permissions, error: permissionsError } = await supabase
+                    .from("modules_permission")
+                    .select(`
+            modules!inner(
+              module_key
+            )
+          `)
+                    .eq("role_id", userRole)
+
+                if (permissionsError) throw permissionsError
+
+                // Actualizar permisos basados en los resultados de la consulta
+                const userPermissions = { ...initialPermissions }
+                permissions.forEach((permission) => {
+                    userPermissions[permission.modules.module_key] = true
+                })
+
+                setModulePermissions(userPermissions)
+            } catch (error) {
+                console.error("Error al cargar permisos de módulos:", error)
+                // En caso de error, usar permisos por defecto (ningún acceso)
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        fetchModulePermissions()
+    }, [userRole])
 
     // Determinar si el usuario está autenticado
     const isAuthenticated = !!user
 
-    // Definir los permisos de módulos por rol
-    const modulePermissions = useMemo(() => {
-        // Permisos por defecto (ningún acceso)
-        const defaultPermissions = {
-            // Admin sidebar
-            adminEvents: false,
-            adminUsers: false,
-            adminRoles: false,
-            adminProfile: false,
-
-            // Event sidebar
-            eventStarted: false,
-            eventDashboard: false,
-            eventSettings: false,
-            eventTickets: false,
-            eventAttendees: false,
-            eventAmenities: false,
-            eventCheckIn: false,
-            eventOrders: false,
-            eventRaffles: false,
-            eventQuestions: false,
-            eventPromoCodes: false,
-            eventMessages: false,
-            eventCapacity: false,
-            eventRegistrationLists: false,
-            eventPageDesigner: false,
-            eventEmployees: false
-        }
-
-        // Si no hay rol o está cargando, devolver permisos por defecto
-        if (!userRole || loading) return defaultPermissions
-
-        // Configurar permisos según el rol
-        switch (userRole) {
-            case 1: // Administrador
-                // Acceso completo a todo
-                return Object.keys(defaultPermissions).reduce((acc, key) => {
-                    acc[key] = true
-                    return acc
-                }, {})
-
-            case 2: // Organizador
-                return {
-                    ...defaultPermissions,
-                    // Admin sidebar
-                    adminEvents: true,
-                    adminProfile: true,
-
-                    // Event sidebar
-                    eventDashboard: true,
-                    eventAttendees: true,
-                    eventRaffles: true,
-                    eventTickets: true,
-                    eventSettings: true
-                }
-
-            case 3: // Asistente
-                // No tiene acceso a módulos administrativos
-                return defaultPermissions
-
-            case 4: // Empleado
-                return {
-                    ...defaultPermissions,
-
-                    eventCheckIn: true,
-                    adminProfile: true,
-                    adminEvents: true,
-                    eventDashboard: true
-                }
-
-            default:
-                return defaultPermissions
-        }
-    }, [userRole, loading])
-
     return {
         user,
         userRole,
-        loading,
+        loading: authLoading || loading,
         isAuthenticated,
         modulePermissions,
 
@@ -98,4 +90,3 @@ export default function useAuth() {
         isAdmin: userRole === 1,
     }
 }
-

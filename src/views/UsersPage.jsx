@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react"
 import supabase from "../api/supabase"
-import { UserPlus, Edit, Trash2, Key, Save } from "lucide-react"
+import { UserPlus, Edit, Trash2, Key, Save, Upload, X } from "lucide-react"
+import ImportUsersModal from "../components/manage/ImportUsersModal"
 
 const UsersPage = () => {
   const [users, setUsers] = useState([])
@@ -13,6 +14,7 @@ const UsersPage = () => {
   const [roleModalVisible, setRoleModalVisible] = useState(false)
   const [editingUser, setEditingUser] = useState(null)
   const [currentUser, setCurrentUser] = useState(null)
+  const [importModalVisible, setImportModalVisible] = useState(false)
 
   useEffect(() => {
     fetchUsers()
@@ -209,12 +211,26 @@ const UsersPage = () => {
     }
   }
 
+  const handleImportSuccess = (count) => {
+    alert(`Se importaron ${count} usuarios correctamente`)
+    fetchUsers()
+    fetchUserRoles()
+    setImportModalVisible(false)
+  }
+
   return (
     <div className="p-6">
       <div className="bg-white rounded-lg shadow-md mb-6">
         <div className="p-6">
           <h2 className="text-2xl font-bold mb-6">Gestión de Usuarios</h2>
-          <div className="flex justify-end mb-4">
+          <div className="flex justify-end mb-4 space-x-2">
+            <button
+              className="flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+              onClick={() => setImportModalVisible(true)}
+            >
+              <Upload className="h-4 w-4 mr-1" />
+              Importar Usuarios
+            </button>
             <button
               className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
               onClick={handleCreateUser}
@@ -305,7 +321,12 @@ const UsersPage = () => {
       {modalVisible && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg w-full max-w-md">
-            <h3 className="text-xl font-bold mb-4">{editingUser ? "Editar Usuario" : "Crear Usuario"}</h3>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold">{editingUser ? "Editar Usuario" : "Crear Usuario"}</h3>
+              <button onClick={() => setModalVisible(false)} className="text-gray-500 hover:text-gray-700">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
             <form
               onSubmit={(e) => {
                 e.preventDefault()
@@ -395,7 +416,12 @@ const UsersPage = () => {
       {roleModalVisible && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg w-full max-w-md">
-            <h3 className="text-xl font-bold mb-4">Asignar Roles a {currentUser?.name}</h3>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold">Asignar Roles a {currentUser?.name}</h3>
+              <button onClick={() => setRoleModalVisible(false)} className="text-gray-500 hover:text-gray-700">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
             <form
               onSubmit={(e) => {
                 e.preventDefault()
@@ -449,9 +475,20 @@ const UsersPage = () => {
           </div>
         </div>
       )}
+
+      {/* Modal para importar usuarios */}
+      <ImportUsersModal
+        isOpen={importModalVisible}
+        onClose={() => setImportModalVisible(false)}
+        onSuccess={() => {
+          fetchUsers()
+          fetchUserRoles()
+          setImportModalVisible(false)
+        }}
+      />
+
     </div>
   )
 }
 
 export default UsersPage
-
