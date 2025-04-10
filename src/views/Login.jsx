@@ -61,14 +61,14 @@ export default function LoginForm() {
   return (
     <div className="w-full max-w-md space-y-6">
       <div className="text-center">
-        <h2 className="text-2xl font-semibold text-gray-700">Iniciar Sesión</h2>
+        <h2 className="text-2xl font-semibold text-white">Iniciar Sesión</h2>
       </div>
 
       {error && <p className="text-red-500 text-center">{error}</p>}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="email" className="block text-sm font-medium text-white">
             Correo Electrónico
           </label>
           <input
@@ -84,10 +84,10 @@ export default function LoginForm() {
 
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="password" className="block text-sm font-medium text-white">
               Contraseña
             </label>
-            <Link to="/auth/forgot-password" className="text-sm text-blue-600 hover:underline">
+            <Link to="/auth/forgot-password" className="text-sm text-gray-200 hover:underline">
               ¿Olvidaste tu contraseña?
             </Link>
           </div>
@@ -105,16 +105,16 @@ export default function LoginForm() {
         <button
           type="submit"
           disabled={loading}
-          className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${loading ? "bg-gray-400" : "bg-gray-700 hover:bg-gray-800"
+          className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${loading ? "bg-gray-900" : "bg-gray-800 hover:bg-gray-950"
             } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
         >
           {loading ? "Cargando..." : "Iniciar Sesión"}
         </button>
       </form>
 
-      <p className="text-center text-sm text-gray-600">
+      <p className="text-center text-sm text-white">
         ¿No tienes una cuenta?{" "}
-        <Link to="/auth/register" className="text-blue-600 hover:underline">
+        <Link to="/auth/register" className="text-gray-200 hover:underline">
           Regístrate
         </Link>
       </p>
