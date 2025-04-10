@@ -167,7 +167,6 @@ const RifasPage = () => {
         }
     }
 
-
     // Cargar ganadores de una rifa
     const handleViewWinners = async (raffle) => {
         try {
@@ -234,7 +233,7 @@ const RifasPage = () => {
         <div className="p-4 max-w-7xl mx-auto">
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-2xl font-bold">Rifas</h1>
-                <Button onClick={() => setAgregarModalOpen(true)} className="bg-purple-600 hover:bg-purple-700 text-white">
+                <Button onClick={() => setAgregarModalOpen(true)} className="bg-green-600 hover:bg-green-700 text-white">
                     <Plus className="w-4 h-4 mr-2" />
                     Agregar rifa
                 </Button>
@@ -258,7 +257,7 @@ const RifasPage = () => {
             ) : (
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {filteredRaffles.map((raffle) => (
-                        <div key={raffle.id} className="bg-white rounded-lg shadow overflow-hidden">
+                        <div key={raffle.id} className="bg-white rounded-lg shadow border border-green-100 overflow-hidden">
                             <div className="p-4 border-b">
                                 <h2 className="text-xl font-semibold">{raffle.name}</h2>
                                 <p className="text-gray-500 mt-1">{raffle.description || "Sin descripción"}</p>
@@ -283,14 +282,14 @@ const RifasPage = () => {
                                             setSelectedRaffle(raffle)
                                             setSeleccionarGanadorModalOpen(true)
                                         }}
-                                        className="bg-green-50 text-green-600 border-green-200 hover:bg-green-100"
+                                        className="bg-green-50 text-green-700 border-green-300 hover:bg-green-100"
                                     >
                                         Seleccionar ganador
                                     </Button>
                                 </div>
                             </div>
 
-                            <div className="bg-gray-50 p-3 flex justify-end gap-2">
+                            <div className="bg-gray-50 border-t border-green-100 p-3 flex justify-end gap-2">
                                 <Button
                                     variant="ghost"
                                     size="icon"
@@ -304,7 +303,7 @@ const RifasPage = () => {
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                    className="text-black hover:text-black hover:bg-green-50"
                                     onClick={() => {
                                         setSelectedRaffle(raffle)
                                         setConfirmDialogOpen(true)
@@ -371,4 +370,3 @@ const RifasPage = () => {
 }
 
 export default RifasPage
-

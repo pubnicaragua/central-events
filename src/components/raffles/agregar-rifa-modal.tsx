@@ -109,7 +109,7 @@ const AgregarRifaModal: React.FC<AgregarRifaModalProps> = ({ isOpen, onClose, on
             <Button type="button" variant="outline" onClick={handleClose} disabled={isSubmitting}>
               Cancelar
             </Button>
-            <Button type="submit" disabled={isSubmitting} className="bg-purple-600 hover:bg-purple-700">
+            <Button type="submit" disabled={isSubmitting} className="bg-green-600 hover:bg-green-700">
               {isSubmitting ? "Guardando..." : "Guardar rifa"}
             </Button>
           </DialogFooter>
@@ -120,4 +120,3 @@ const AgregarRifaModal: React.FC<AgregarRifaModalProps> = ({ isOpen, onClose, on
 }
 
 export default AgregarRifaModal
-

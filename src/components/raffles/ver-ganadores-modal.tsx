@@ -63,7 +63,7 @@ const VerGanadoresModal: React.FC<VerGanadoresModalProps> = ({ isOpen, onClose, 
                       variant="ghost"
                       size="icon"
                       onClick={() => handleRemoveWinner(winner)}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      className="text-black hover:text-black hover:bg-green-50"
                     >
                       <Trash className="w-4 h-4" />
                     </Button>
@@ -74,7 +74,9 @@ const VerGanadoresModal: React.FC<VerGanadoresModalProps> = ({ isOpen, onClose, 
           </div>
 
           <DialogFooter>
-            <Button onClick={onClose}>Cerrar</Button>
+            <Button onClick={onClose} className="bg-green-600 hover:bg-green-700 text-white">
+              Cerrar
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -93,4 +95,3 @@ const VerGanadoresModal: React.FC<VerGanadoresModalProps> = ({ isOpen, onClose, 
 }
 
 export default VerGanadoresModal
-

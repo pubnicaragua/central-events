@@ -75,10 +75,7 @@ const SeleccionarGanadorModal: React.FC<SeleccionarGanadorModalProps> = ({
   const fetchCurrentWinners = async () => {
     try {
       // Obtener todas las rifas del evento
-      const { data: raffles, error: rafflesError } = await supabase
-        .from("raffles")
-        .select("id")
-        .eq("event_id", eventId)
+      const { data: raffles, error: rafflesError } = await supabase.from("raffles").select("id").eq("event_id", eventId)
 
       if (rafflesError) throw rafflesError
 
@@ -98,7 +95,6 @@ const SeleccionarGanadorModal: React.FC<SeleccionarGanadorModalProps> = ({
       console.error("Error al cargar ganadores:", error)
     }
   }
-
 
   const filterAttendees = () => {
     const filtered = attendees.filter((attendee) => {
@@ -181,7 +177,7 @@ const SeleccionarGanadorModal: React.FC<SeleccionarGanadorModalProps> = ({
 
             <Button
               onClick={startRandomSelection}
-              className="ml-2 bg-green-600 hover:bg-green-700 text-white flex items-center gap-2"
+              className="ml-2 bg-black hover:bg-gray-800 text-white flex items-center gap-2"
               disabled={randomSelectionActive || filteredAttendees.length === 0}
             >
               <Shuffle className="w-4 h-4" />
@@ -190,8 +186,8 @@ const SeleccionarGanadorModal: React.FC<SeleccionarGanadorModalProps> = ({
           </div>
 
           {randomAttendee && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
-              <h3 className="text-lg font-medium text-green-800">
+            <div className="bg-green-50 border border-green-300 rounded-lg p-4 text-center">
+              <h3 className="text-lg font-medium text-green-700">
                 {randomSelectionActive ? "Seleccionando..." : "¡Ganador seleccionado!"}
               </h3>
               <div className="mt-2 p-3 bg-white rounded-md shadow-sm">
@@ -207,7 +203,7 @@ const SeleccionarGanadorModal: React.FC<SeleccionarGanadorModalProps> = ({
               {!randomSelectionActive && (
                 <Button
                   onClick={() => handleSelectWinner(randomAttendee.id)}
-                  className="mt-3 bg-green-600 hover:bg-green-700"
+                  className="mt-3 bg-green-700 hover:bg-green-800"
                 >
                   Confirmar ganador
                 </Button>
@@ -244,7 +240,7 @@ const SeleccionarGanadorModal: React.FC<SeleccionarGanadorModalProps> = ({
                     <Button
                       size="sm"
                       onClick={() => handleSelectWinner(attendee.id)}
-                      className="flex items-center gap-1"
+                      className="flex items-center gap-1 bg-green-600 hover:bg-green-700 text-white"
                       disabled={randomSelectionActive}
                     >
                       <Gift className="w-3 h-3" />
@@ -268,4 +264,3 @@ const SeleccionarGanadorModal: React.FC<SeleccionarGanadorModalProps> = ({
 }
 
 export default SeleccionarGanadorModal
-
