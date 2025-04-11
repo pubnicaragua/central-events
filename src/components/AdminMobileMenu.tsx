@@ -135,7 +135,7 @@ export const AdminMobileMenu = () => {
                                     {hasPermission("adminModules") && (
                                         <Link
                                             to={"/admin/modules"}
-                                            className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-colors duration-200 ${location.pathname === "/admin/profile"
+                                            className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-colors duration-200 ${location.pathname === "/admin/modules"
                                                 ? "bg-emerald-950 text-white font-medium"
                                                 : "text-emerald-100 hover:bg-emerald-800 hover:text-white"
                                                 }`}
