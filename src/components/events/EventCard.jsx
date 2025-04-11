@@ -2,13 +2,11 @@
 
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { MoreVertical, Settings, Copy, Archive, Ticket, DollarSign } from "lucide-react"
+import { MoreVertical, Settings, Copy, Archive, Users, CheckSquare } from "lucide-react"
 import PropTypes from "prop-types"
-import supabase from "../../api/supabase"
 import useAuth from "../../hooks/useAuth"
 
-
-function EventCard({ event, onDuplicate, onArchive }) {
+function EventCard({ event, onDuplicate, onArchive, organizer, attendeeCount, checkedInCount }) {
     const [showMenu, setShowMenu] = useState(false)
     const navigate = useNavigate()
 
@@ -22,7 +20,6 @@ function EventCard({ event, onDuplicate, onArchive }) {
     }
 
     const { isAdmin } = useAuth()
-
 
     const startDate = event.start_date ? formatDate(event.start_date) : { day: "--", month: "---", time: "--:--" }
 
@@ -56,7 +53,7 @@ function EventCard({ event, onDuplicate, onArchive }) {
                             {event.status === "Próximo" ? "PRÓXIMO" : event.status === "Terminado" ? "TERMINADO" : "ARCHIVADO"}
                         </div>
                         <h3 className="text-lg font-medium text-emerald-800">{event.name}</h3>
-                        <p className="text-sm text-emerald-600">{event.organizers?.name || "Organizador desconocido"}</p>
+                       
                     </div>
 
                     <div className="relative">
@@ -74,8 +71,9 @@ function EventCard({ event, onDuplicate, onArchive }) {
                                     <button
                                         className="w-full text-left px-4 py-2.5 text-sm text-emerald-700 hover:bg-emerald-50 flex items-center"
                                         onClick={() => {
-                                            isAdmin ? navigate(`/manage/event/${event.id}/getting-started`) :
-                                                navigate(`/manage/event/${event.id}/dashboard`)
+                                            isAdmin
+                                                ? navigate(`/manage/event/${event.id}/getting-started`)
+                                                : navigate(`/manage/event/${event.id}/dashboard`)
                                             setShowMenu(false)
                                         }}
                                     >
@@ -110,17 +108,17 @@ function EventCard({ event, onDuplicate, onArchive }) {
                                 </div>
                             </div>
                         )}
-
                     </div>
                 </div>
 
                 <div className="mt-4 flex items-center text-sm text-emerald-700 space-x-4">
                     <span className="flex items-center">
-                        <Ticket className="w-4 h-4 mr-1.5 text-emerald-600" />
-                        {event.tickets_sold || 0} entradas vendidas
+                        <Users className="w-4 h-4 mr-1.5 text-emerald-600" />
+                        {attendeeCount || 0} asistentes totales
                     </span>
                     <span className="flex items-center">
-                        <DollarSign className="w-4 h-4 mr-1.5 text-emerald-600" />${event.revenue || "0.00"} ventas brutas
+                        <CheckSquare className="w-4 h-4 mr-1.5 text-emerald-600" />
+                        {checkedInCount || 0} check-ins
                     </span>
                 </div>
             </div>
@@ -134,5 +132,7 @@ EventCard.propTypes = {
     event: PropTypes.object.isRequired,
     onDuplicate: PropTypes.func.isRequired,
     onArchive: PropTypes.func.isRequired,
+    organizer: PropTypes.string,
+    attendeeCount: PropTypes.number,
+    checkedInCount: PropTypes.number,
 }
-

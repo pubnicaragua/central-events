@@ -132,8 +132,8 @@ function CreateEventModal({ onClose, onSubmit }) {
     setSubmitting(true)
     try {
       await onSubmit(formData)
-    } catch (err) {
-      console.error("Error al enviar el formulario:", err)
+    } catch (error) {
+      console.error("Error al enviar el formulario:", error)
       setError("Ocurrió un error al crear el evento. Por favor, intenta de nuevo.")
     } finally {
       setSubmitting(false)
@@ -157,7 +157,7 @@ function CreateEventModal({ onClose, onSubmit }) {
             className="p-2 rounded-full hover:bg-emerald-100 transition-colors text-emerald-700"
             aria-label="Cerrar"
           >
-            <X className="w-6 h-6" />
+            <X size="24" />
           </button>
         </div>
 
@@ -176,8 +176,9 @@ function CreateEventModal({ onClose, onSubmit }) {
                 name="organizer_id"
                 value={formData.organizer_id}
                 onChange={handleChange}
-                className={`w-full p-3 border ${formErrors.organizer_id ? "border-red-500" : "border-emerald-200"
-                  } rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all bg-white shadow-sm`}
+                className={`w-full p-3 border ${
+                  formErrors.organizer_id ? "border-red-500" : "border-emerald-200"
+                } rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all bg-white shadow-sm`}
                 required
                 disabled={loading}
               >
@@ -220,8 +221,9 @@ function CreateEventModal({ onClose, onSubmit }) {
               value={formData.name}
               onChange={handleChange}
               placeholder="Ej: Conferencia Anual 2025"
-              className={`w-full p-3 border ${formErrors.name ? "border-red-500" : "border-emerald-200"
-                } rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all bg-white shadow-sm`}
+              className={`w-full p-3 border ${
+                formErrors.name ? "border-red-500" : "border-emerald-200"
+              } rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all bg-white shadow-sm`}
               required
             />
             {formErrors.name && <p className="text-sm text-red-600 mt-1">{formErrors.name}</p>}
@@ -252,8 +254,9 @@ function CreateEventModal({ onClose, onSubmit }) {
                 name="start_date"
                 value={formData.start_date}
                 onChange={handleChange}
-                className={`w-full p-3 border ${formErrors.start_date ? "border-red-500" : "border-emerald-200"
-                  } rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all bg-white shadow-sm`}
+                className={`w-full p-3 border ${
+                  formErrors.start_date ? "border-red-500" : "border-emerald-200"
+                } rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all bg-white shadow-sm`}
                 required
               />
               {formErrors.start_date && <p className="text-sm text-red-600 mt-1">{formErrors.start_date}</p>}
@@ -269,8 +272,9 @@ function CreateEventModal({ onClose, onSubmit }) {
                 name="end_date"
                 value={formData.end_date}
                 onChange={handleChange}
-                className={`w-full p-3 border ${formErrors.end_date ? "border-red-500" : "border-emerald-200"
-                  } rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all bg-white shadow-sm`}
+                className={`w-full p-3 border ${
+                  formErrors.end_date ? "border-red-500" : "border-emerald-200"
+                } rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all bg-white shadow-sm`}
                 required
               />
               {formErrors.end_date && <p className="text-sm text-red-600 mt-1">{formErrors.end_date}</p>}
@@ -304,6 +308,4 @@ export default CreateEventModal
 CreateEventModal.propTypes = {
   onClose: PropTypes.func.isRequired,
   onSubmit: PropTypes.func.isRequired,
-  userId: PropTypes.string.isRequired,
 }
-
