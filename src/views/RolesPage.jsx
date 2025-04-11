@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import supabase from "../api/supabase"
-import { Plus, Edit, Trash2, AppWindow, Save, X } from "lucide-react"
+import { AppWindow, Save, X } from "lucide-react"
 import { getAllModules, getModulePermissionsByRole, assignModulesToRole } from "../components/lib/actions/modules"
 
 const RolesPage = () => {
@@ -169,25 +169,19 @@ const RolesPage = () => {
   }
 
   return (
-    <div className="p-6">
+    <div className="p-6 bg-green-50">
       <div className="bg-white rounded-lg shadow-md mb-6">
         <div className="p-6">
-          <h2 className="text-2xl font-bold mb-6">Gestión de Roles y Módulos</h2>
+          <h2 className="text-2xl font-bold mb-6 text-green-700">Gestión de Roles y Módulos</h2>
 
           {/* Tabs */}
           <div className="border-b mb-4">
             <div className="flex">
               <button
-                className={`py-2 px-4 font-medium ${activeTab === "roles" ? "border-b-2 border-blue-500 text-blue-600" : "text-gray-500"}`}
+                className={`py-2 px-4 font-medium ${activeTab === "roles" ? "border-b-2 border-green-500 text-green-600" : "text-gray-500"}`}
                 onClick={() => setActiveTab("roles")}
               >
                 Roles
-              </button>
-              <button
-                className={`py-2 px-4 font-medium ${activeTab === "modules" ? "border-b-2 border-blue-500 text-blue-600" : "text-gray-500"}`}
-                onClick={() => (window.location.href = "/modules")}
-              >
-                Módulos
               </button>
             </div>
           </div>
@@ -195,19 +189,10 @@ const RolesPage = () => {
           {/* Roles Tab */}
           {activeTab === "roles" && (
             <>
-              <div className="flex justify-end mb-4">
-                <button
-                  className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                  onClick={handleCreateRole}
-                >
-                  <Plus className="h-4 w-4 mr-1" />
-                  Crear Rol
-                </button>
-              </div>
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse">
                   <thead>
-                    <tr className="bg-gray-50">
+                    <tr className="bg-green-50">
                       <th className="text-left p-3 border-b">Nombre</th>
                       <th className="text-left p-3 border-b">Descripción</th>
                       <th className="text-left p-3 border-b">Acciones</th>
@@ -234,29 +219,11 @@ const RolesPage = () => {
                           <td className="p-3 border-b">
                             <div className="flex space-x-2">
                               <button
-                                className="flex items-center px-3 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200"
-                                onClick={() => handleEditRole(role)}
-                              >
-                                <Edit className="h-4 w-4 mr-1" />
-                                Editar
-                              </button>
-                              <button
-                                className="flex items-center px-3 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200"
+                                className="flex items-center px-3 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200"
                                 onClick={() => handleManageModules(role)}
                               >
                                 <AppWindow className="h-4 w-4 mr-1" />
                                 Módulos
-                              </button>
-                              <button
-                                className="flex items-center px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200"
-                                onClick={() => {
-                                  if (window.confirm("¿Estás seguro de eliminar este rol?")) {
-                                    handleDeleteRole(role.id)
-                                  }
-                                }}
-                              >
-                                <Trash2 className="h-4 w-4 mr-1" />
-                                Eliminar
                               </button>
                             </div>
                           </td>
@@ -265,6 +232,26 @@ const RolesPage = () => {
                     )}
                   </tbody>
                 </table>
+                <div className="mt-4 p-3 bg-gray-50 border border-gray-200 rounded-md text-sm text-gray-600">
+                  <p className="flex items-center">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 mr-2 text-green-600"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                    Los roles solo pueden ser creados, editados o eliminados por un super administrador o soporte
+                    técnico.
+                  </p>
+                </div>
               </div>
             </>
           )}
@@ -319,7 +306,7 @@ const RolesPage = () => {
                 </button>
                 <button
                   type="submit"
-                  className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                  className="flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
                 >
                   <Save className="h-4 w-4 mr-1" />
                   {editingRole ? "Actualizar" : "Crear"}
@@ -364,7 +351,7 @@ const RolesPage = () => {
                             <span className="text-xs text-gray-500 ml-2">({module.module_key})</span>
                           </label>
                           <span
-                            className={`px-2 py-1 rounded-full text-xs ${module.is_enabled ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}
+                            className={`px-2 py-1 rounded-full text-xs ${module.is_enabled ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}`}
                           >
                             {module.is_enabled ? "Activo" : "Inactivo"}
                           </span>
@@ -383,7 +370,7 @@ const RolesPage = () => {
                   </button>
                   <button
                     type="button"
-                    className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                    className="flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
                     onClick={handleSubmitModulePermissions}
                   >
                     <Save className="h-4 w-4 mr-1" />

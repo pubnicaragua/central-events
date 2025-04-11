@@ -17,6 +17,7 @@ function Events() {
   const [userId, setUserId] = useState(null)
   const [userRoleId, setUserRoleId] = useState(null)
   const [error, setError] = useState(null)
+  const [eventDetails, setEventDetails] = useState({})
   const navigate = useNavigate()
 
   function printError(tablename, action, error) {
@@ -76,6 +77,55 @@ function Events() {
       if (error) throw error
 
       setEvents(data || [])
+
+      // Fetch additional details for each event
+      if (data && data.length > 0) {
+        const details = {}
+
+        for (const event of data) {
+          // Get organizer info
+          const { data: organizerData, error: organizerError } = await supabase
+            .from("user_profile")
+            .select("auth_id, users(name, second_name)")
+            .eq("event_id", event.id)
+            .eq("users.role_id", 2) // Role ID 2 is for organizers
+            .single()
+
+          let organizerName = "Organizador desconocido"
+          if (!organizerError && organizerData && organizerData.users) {
+            organizerName = `${organizerData.users.name || ""} ${organizerData.users.second_name || ""}`.trim()
+          }
+
+          // Get attendee count
+          const { count: attendeeCount, error: attendeeError } = await supabase
+            .from("attendees")
+            .select("id", { count: "exact", head: true })
+            .eq("event_id", event.id)
+
+          if (attendeeError) {
+            console.error("Error fetching attendee count:", attendeeError)
+          }
+
+          // Get checked-in count
+          const { count: checkedInCount, error: checkedInError } = await supabase
+            .from("attendees")
+            .select("id", { count: "exact", head: true })
+            .eq("event_id", event.id)
+            .eq("checked_in", true)
+
+          if (checkedInError) {
+            console.error("Error fetching checked-in count:", checkedInError)
+          }
+
+          details[event.id] = {
+            organizer: organizerName,
+            attendeeCount: attendeeCount || 0,
+            checkedInCount: checkedInCount || 0,
+          }
+        }
+
+        setEventDetails(details)
+      }
     } catch (err) {
       console.error("Error al obtener eventos:", err)
       setError("No se pudieron cargar los eventos. Por favor, intenta de nuevo.")
@@ -88,7 +138,8 @@ function Events() {
 
   const handleCreateEvent = async (eventData) => {
     try {
-      const { data, error } = await supabase.from("events").insert([eventData]).select()
+      const { organizer_id, ...restEventData } = eventData
+      const { data, error } = await supabase.from("events").insert([restEventData]).select()
 
       if (error) {
         const errorMsg = printError("events", "crear", error)
@@ -96,8 +147,19 @@ function Events() {
       }
 
       if (data && data[0]) {
+        // Update user_profile table
+        const eventId = data[0].id
+        const { error: profileError } = await supabase
+          .from("user_profile")
+          .update({ event_id: eventId })
+          .eq("auth_id", organizer_id)
+
+        if (profileError) {
+          console.error("Error updating user profile:", profileError)
+          throw new Error("Failed to assign event to user profile.")
+        }
         // Redirigir a getting-started en lugar de settings
-        navigate(`/manage/event/${data.id}/getting-started`)
+        navigate(`/manage/event/${eventId}/getting-started`)
       } else {
         throw new Error("No se recibió confirmación del servidor")
       }
@@ -218,8 +280,8 @@ function Events() {
                 <button
                   key={tab}
                   className={`py-4 px-1 border-b-2 font-medium text-sm transition-all ${activeTab === tab
-                    ? "border-emerald-600 text-emerald-800"
-                    : "border-transparent text-gray-500 hover:text-emerald-700 hover:border-emerald-300"
+                      ? "border-emerald-600 text-emerald-800"
+                      : "border-transparent text-gray-500 hover:text-emerald-700 hover:border-emerald-300"
                     }`}
                   onClick={() => setActiveTab(tab)}
                 >
@@ -242,6 +304,9 @@ function Events() {
                   event={event}
                   onDuplicate={() => handleDuplicateEvent(event)}
                   onArchive={() => handleArchiveEvent(event.id)}
+                  organizer={eventDetails[event.id]?.organizer}
+                  attendeeCount={eventDetails[event.id]?.attendeeCount}
+                  checkedInCount={eventDetails[event.id]?.checkedInCount}
                 />
               ))
             ) : (
@@ -261,16 +326,10 @@ function Events() {
       </div>
 
       {showCreateEventModal && userRoleId === 1 && (
-        <CreateEventModal
-          onClose={() => setShowCreateEventModal(false)}
-          userId={userId}
-          onSubmit={handleCreateEvent}
-        />
+        <CreateEventModal onClose={() => setShowCreateEventModal(false)} onSubmit={handleCreateEvent} />
       )}
-
     </div>
   )
 }
 
 export default Events
-
