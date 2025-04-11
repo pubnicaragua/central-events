@@ -21,7 +21,7 @@ export default function useAuth() {
                 // Obtener todos los módulos disponibles para inicializar con false
                 const { data: allModules, error: modulesError } = await supabase
                     .from("modules")
-                    .select("module_key")
+                    .select("id, module_key")
                     .eq("is_enabled", true)
 
                 if (modulesError) throw modulesError
@@ -46,22 +46,33 @@ export default function useAuth() {
                 // Para otros roles, obtener permisos específicos
                 const { data: permissions, error: permissionsError } = await supabase
                     .from("modules_permission")
-                    .select(`
-            modules!inner(
-              module_key
-            )
-          `)
+                    .select("module_id")
                     .eq("role_id", userRole)
 
                 if (permissionsError) throw permissionsError
 
-                // Actualizar permisos basados en los resultados de la consulta
-                const userPermissions = { ...initialPermissions }
-                permissions.forEach((permission) => {
-                    userPermissions[permission.modules.module_key] = true
-                })
+                // Obtener las claves de módulo para los IDs de módulo permitidos
+                const moduleIds = permissions.map((p) => p.module_id)
 
-                setModulePermissions(userPermissions)
+                if (moduleIds.length > 0) {
+                    const { data: permittedModules, error: permittedError } = await supabase
+                        .from("modules")
+                        .select("module_key")
+                        .in("id", moduleIds)
+                        .eq("is_enabled", true)
+
+                    if (permittedError) throw permittedError
+
+                    // Actualizar permisos basados en los resultados de la consulta
+                    const userPermissions = { ...initialPermissions }
+                    permittedModules.forEach((module) => {
+                        userPermissions[module.module_key] = true
+                    })
+
+                    setModulePermissions(userPermissions)
+                } else {
+                    setModulePermissions(initialPermissions)
+                }
             } catch (error) {
                 console.error("Error al cargar permisos de módulos:", error)
                 // En caso de error, usar permisos por defecto (ningún acceso)
@@ -70,7 +81,9 @@ export default function useAuth() {
             }
         }
 
-        fetchModulePermissions()
+        if (userRole !== null) {
+            fetchModulePermissions()
+        }
     }, [userRole])
 
     // Determinar si el usuario está autenticado
@@ -84,7 +97,16 @@ export default function useAuth() {
         modulePermissions,
 
         // Helper para verificar si tiene permiso para un módulo específico
-        hasPermission: (module) => modulePermissions[module] || false,
+        hasPermission: (module) => {
+            // Si es admin (rol 1), siempre tiene permiso
+            if (userRole === 1) return true
+
+            // Si el módulo no existe en los permisos, no tiene acceso
+            if (modulePermissions[module] === undefined) return false
+
+            // Devolver el valor del permiso
+            return modulePermissions[module]
+        },
 
         // Helper para verificar si es admin
         isAdmin: userRole === 1,
