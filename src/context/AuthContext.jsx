@@ -26,18 +26,29 @@ export function AuthProvider({ children }) {
 
       setUser(data.user)
 
-      // Obtener el rol desde la tabla user_roles
-      const { data: roleData, error: roleError } = await supabase
-        .from("user_roles")
-        .select("role_id")
-        .eq("user_id", data.user.id)
-        .single()
+      try {
+        // Obtener el rol desde la tabla user_roles
+        const { data: roleData, error: roleError } = await supabase
+          .from("user_roles")
+          .select("role_id")
+          .eq("user_id", data.user.id)
+          .single()
 
-      if (roleError) {
-        console.error("Error obteniendo rol:", roleError)
+        if (roleError) {
+          if (roleError.code === "PGRST116") {
+            // No se encontró ningún rol, asignar null
+            console.log("Usuario sin rol asignado:", data.user.email)
+            setUserRole(null)
+          } else {
+            console.error("Error obteniendo rol:", roleError)
+            setUserRole(null)
+          }
+        } else {
+          setUserRole(roleData?.role_id)
+        }
+      } catch (error) {
+        console.error("Error inesperado al obtener rol:", error)
         setUserRole(null)
-      } else {
-        setUserRole(roleData?.role_id) // Si no tiene rol, asumimos "user"
       }
 
       setLoading(false)
@@ -51,7 +62,9 @@ export function AuthProvider({ children }) {
     })
 
     return () => {
-      authListener.subscription.unsubscribe()
+      if (authListener?.subscription) {
+        authListener.subscription.unsubscribe()
+      }
     }
   }, [])
 
@@ -65,4 +78,3 @@ export function useAuth() {
 AuthProvider.propTypes = {
   children: PropTypes.node.isRequired,
 }
-

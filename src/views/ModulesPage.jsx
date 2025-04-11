@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { getAllModules, createModule, updateModule, deleteModule } from "../components/lib/actions/modules"
-import { Plus, Edit, Trash2, Save, X, Power } from "lucide-react"
+import { Save, X, Power } from "lucide-react"
 
 const ModulesPage = () => {
     const [modules, setModules] = useState([])
@@ -110,25 +110,15 @@ const ModulesPage = () => {
     }
 
     return (
-        <div className="p-6">
+        <div className="p-6 bg-green-50">
             <div className="bg-white rounded-lg shadow-md mb-6">
                 <div className="p-6">
-                    <h2 className="text-2xl font-bold mb-6">Gestión de Módulos</h2>
-
-                    <div className="flex justify-end mb-4">
-                        <button
-                            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                            onClick={handleCreateModule}
-                        >
-                            <Plus className="h-4 w-4 mr-1" />
-                            Crear Módulo
-                        </button>
-                    </div>
+                    <h2 className="text-2xl font-bold mb-6 text-green-700">Gestión de Módulos</h2>
 
                     <div className="overflow-x-auto">
                         <table className="w-full border-collapse">
                             <thead>
-                                <tr className="bg-gray-50">
+                                <tr className="bg-green-50">
                                     <th className="text-left p-3 border-b">Nombre</th>
                                     <th className="text-left p-3 border-b">Clave</th>
                                     <th className="text-left p-3 border-b">Estado</th>
@@ -155,7 +145,7 @@ const ModulesPage = () => {
                                             <td className="p-3 border-b">{module.module_key}</td>
                                             <td className="p-3 border-b">
                                                 <span
-                                                    className={`px-2 py-1 rounded-full text-xs ${module.is_enabled ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}
+                                                    className={`px-2 py-1 rounded-full text-xs ${module.is_enabled ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}`}
                                                 >
                                                     {module.is_enabled ? "Activo" : "Inactivo"}
                                                 </span>
@@ -163,25 +153,11 @@ const ModulesPage = () => {
                                             <td className="p-3 border-b">
                                                 <div className="flex space-x-2">
                                                     <button
-                                                        className="flex items-center px-3 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200"
-                                                        onClick={() => handleEditModule(module)}
-                                                    >
-                                                        <Edit className="h-4 w-4 mr-1" />
-                                                        Editar
-                                                    </button>
-                                                    <button
-                                                        className="flex items-center px-3 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200"
+                                                        className="flex items-center px-3 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200"
                                                         onClick={() => handleToggleStatus(module)}
                                                     >
                                                         <Power className="h-4 w-4 mr-1" />
                                                         {module.is_enabled ? "Desactivar" : "Activar"}
-                                                    </button>
-                                                    <button
-                                                        className="flex items-center px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200"
-                                                        onClick={() => handleDeleteModule(module.id)}
-                                                    >
-                                                        <Trash2 className="h-4 w-4 mr-1" />
-                                                        Eliminar
                                                     </button>
                                                 </div>
                                             </td>
@@ -190,6 +166,25 @@ const ModulesPage = () => {
                                 )}
                             </tbody>
                         </table>
+                        <div className="mt-4 p-3 bg-gray-50 border border-gray-200 rounded-md text-sm text-gray-600">
+                            <p className="flex items-center">
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="h-5 w-5 mr-2 text-green-600"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                    />
+                                </svg>
+                                Los módulos solo pueden ser creados, editados o eliminados por un super administrador o soporte técnico.
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -255,7 +250,7 @@ const ModulesPage = () => {
                                 </button>
                                 <button
                                     type="submit"
-                                    className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                                    className="flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
                                 >
                                     <Save className="h-4 w-4 mr-1" />
                                     {editingModule ? "Actualizar" : "Crear"}
