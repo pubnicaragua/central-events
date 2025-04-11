@@ -75,7 +75,7 @@ function Sidebar() {
                                     </Link>
                                 )}
 
-                                {hasPermission("adminProfile") && (
+                                {hasPermission("adminModules") && (
                                     <Link
                                         to={"/admin/modules"}
                                         className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-colors duration-200 ${location.pathname === "/admin/profile"
