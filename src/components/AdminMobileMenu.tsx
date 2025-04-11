@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { X, Menu, CalendarPlus, UserPlus, Lock, UserRound, Bell, LogOut } from "lucide-react"
+import { X, Menu, CalendarPlus, UserPlus, Lock, UserRound, Puzzle } from "lucide-react"
 import { Link, useLocation } from "react-router-dom"
 import { useMobile } from "../hooks/useMobile"
 import useAuth from "../hooks/useAuth"
@@ -132,16 +132,16 @@ export const AdminMobileMenu = () => {
                                         </Link>
                                     )}
 
-                                    {hasPermission("adminNotifications") && (
+                                    {hasPermission("adminProfile") && (
                                         <Link
-                                            to="/admin/notifications"
-                                            className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-colors duration-200 ${location.pathname === "/admin/notifications"
+                                            to={"/admin/modules"}
+                                            className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-colors duration-200 ${location.pathname === "/admin/profile"
                                                 ? "bg-emerald-950 text-white font-medium"
                                                 : "text-emerald-100 hover:bg-emerald-800 hover:text-white"
                                                 }`}
                                         >
-                                            <Bell className="h-4 w-4" />
-                                            Notificaciones
+                                            <Puzzle className="h-4 w-4" />
+                                            Permisos de modulos
                                         </Link>
                                     )}
                                 </div>
