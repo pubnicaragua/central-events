@@ -14,14 +14,12 @@ import TicketLevels from "./src/views/TicketLevels"
 import QuestionsPage from "./src/views/QuestionsPage"
 import PromoCodes from "./src/views/PromoCodes"
 import DashboardPage from "./src/views/DashboardPage"
-import Home from "./src/views/Home"
 import AttendeesPage from "./src/views/Attendants"
 import OrdersPage from "./src/views/OrdersPage"
 import Messages from "./src/views/Messages"
 import CapacityPage from "./src/views/CapacityPage"
 import RegistrationListsPage from "./src/views/RegistrationListsPage"
 import HomepageDesigner from "./src/views/HomepageDesigner"
-import GuestPage from "./src/views/GuestPage"
 import ProfilePage from "./src/views/ProfilePage"
 import Amenidades from "./src/views/Amenities"
 import CheckInPage from "./src/views/CheckInPage"
@@ -30,7 +28,7 @@ import EventAttendee from "./src/views/EventAttendee"
 import AttendeeDetail from "./src/views/AttendeeDetail"
 import UsersPage from "./src/views/UsersPage"
 import RolesPage from "./src/views/RolesPage"
-import Notifications from "./src/views/Notifications"
+//import Notifications from "./src/views/Notifications"
 import AccessDenied from "./src/views/AccessDenied"
 import ForgotPassword from "./src/views/ForgotPassword"
 import ResetPassword from "./src/views/ResetPassword"
@@ -46,27 +44,27 @@ const ROLE_PERMISSIONS = {
   adminUsers: [1],
   adminRoles: [1],
   adminModules: [1],
-  adminNotifications: [1],
+  //adminNotifications: [1],
 
   // Rutas de gestión de eventos
+  eventAmenities: [1, 2],
+  eventAttendees: [1, 2],
+  eventCapacity: [1],
+  eventCheckIn: [1, 4],
+  eventDashboard: [1, 2, 4],
+  EventEmployees: [1],
   eventGettingStarted: [1],
+  eventMessages: [1],
+  eventGuests: [1, 2],
+  eventOrders: [1], // Solo admin puede ver pedidos
+  eventPageDesigner: [1],
+  eventPromoCodes: [1],
+  eventQuestions: [1],
+  eventRaffles: [1, 2],
+  eventRegistrationLists: [1],
   eventSettings: [1, 2],
   eventTickets: [1, 2],
   eventTicketLevels: [1, 2],
-  eventOrders: [1], // Solo admin puede ver pedidos
-  eventGuests: [1, 2],
-  eventQuestions: [1],
-  eventPromoCodes: [1],
-  eventDashboard: [1, 2, 4],
-  eventAmenities: [1, 2],
-  eventRegistrationLists: [1],
-  eventCapacity: [1],
-  eventPageDesigner: [1],
-  eventMessages: [1],
-  eventAttendees: [1, 2],
-  eventCheckIn: [1, 4],
-  eventRaffles: [1, 2],
-  EventEmployees: [1]
 }
 
 const router = createBrowserRouter([
@@ -160,17 +158,7 @@ const router = createBrowserRouter([
                 element: <ModulesPage />,
               },
             ],
-          },
-          {
-            path: "admin/notifications",
-            element: <ProtectedRoute allowedRoles={ROLE_PERMISSIONS.adminNotifications} />,
-            children: [
-              {
-                path: "",
-                element: <Notifications />,
-              },
-            ],
-          },
+          }
         ],
       },
     ],
@@ -235,16 +223,6 @@ const router = createBrowserRouter([
             ],
           },
           {
-            path: ":eventId/guests",
-            element: <ProtectedRoute allowedRoles={ROLE_PERMISSIONS.eventGuests} />,
-            children: [
-              {
-                path: "",
-                element: <GuestPage />,
-              },
-            ],
-          },
-          {
             path: ":eventId/questions",
             element: <ProtectedRoute allowedRoles={ROLE_PERMISSIONS.eventQuestions} />,
             children: [
@@ -273,10 +251,6 @@ const router = createBrowserRouter([
                 element: <DashboardPage />,
               },
             ],
-          },
-          {
-            path: "widget",
-            element: <Home />,
           },
           {
             path: ":eventId/amenities",
