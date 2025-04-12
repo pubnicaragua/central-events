@@ -9,6 +9,7 @@ import useAuth from "../../hooks/useAuth"
 function EventCard({ event, onDuplicate, onArchive, organizer, attendeeCount, checkedInCount }) {
     const [showMenu, setShowMenu] = useState(false)
     const navigate = useNavigate()
+    const { user, isAdmin, isEmployee } = useAuth()
 
     const formatDate = (dateString) => {
         const date = new Date(dateString)
@@ -19,9 +20,27 @@ function EventCard({ event, onDuplicate, onArchive, organizer, attendeeCount, ch
         }
     }
 
-    const { isAdmin } = useAuth()
+    // Determinar el rol del usuario correctamente
+    const isOrganizer = user?.role_id === 2
+   
 
     const startDate = event.start_date ? formatDate(event.start_date) : { day: "--", month: "---", time: "--:--" }
+
+    function redirectByRole() {
+        console.log("Redirecting with role:", { isAdmin, isOrganizer, isEmployee })
+
+        if (isAdmin) {
+            navigate(`/manage/event/${event.id}/getting-started`)
+        } else if (isOrganizer) {
+            navigate(`/manage/event/${event.id}/dashboard`)
+        } else if (isEmployee) {
+            navigate(`/manage/event/${event.id}/checkin`)
+        } else {
+            // Fallback por si no se detecta ningún rol
+            console.error("No se detectó un rol válido para la redirección")
+            navigate(`/manage/event/${event.id}/dashboard`)
+        }
+    }
 
     const getStatusColor = (status) => {
         switch (status) {
@@ -53,7 +72,7 @@ function EventCard({ event, onDuplicate, onArchive, organizer, attendeeCount, ch
                             {event.status === "Próximo" ? "PRÓXIMO" : event.status === "Terminado" ? "TERMINADO" : "ARCHIVADO"}
                         </div>
                         <h3 className="text-lg font-medium text-emerald-800">{event.name}</h3>
-                       
+                        <p className="text-sm text-emerald-600">{organizer || "Organizador desconocido"}</p>
                     </div>
 
                     <div className="relative">
@@ -71,14 +90,12 @@ function EventCard({ event, onDuplicate, onArchive, organizer, attendeeCount, ch
                                     <button
                                         className="w-full text-left px-4 py-2.5 text-sm text-emerald-700 hover:bg-emerald-50 flex items-center"
                                         onClick={() => {
-                                            isAdmin
-                                                ? navigate(`/manage/event/${event.id}/getting-started`)
-                                                : navigate(`/manage/event/${event.id}/dashboard`)
+                                            redirectByRole()
                                             setShowMenu(false)
                                         }}
                                     >
                                         <Settings className="w-5 h-5 mr-3 text-emerald-600" />
-                                        Administrar evento
+                                        {isEmployee ? "Ir a Check-in" : "Administrar evento"}
                                     </button>
 
                                     {isAdmin && (
