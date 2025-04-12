@@ -1,7 +1,7 @@
 "use client"
 
 import { Navigate, Outlet, useLocation } from "react-router-dom"
-import  useAuth  from "../hooks/useAuth"
+import useAuth from "../hooks/useAuth"
 
 // Componente para proteger rutas basado en autenticación y roles
 export default function ProtectedRoute({ allowedRoles = [] }) {
