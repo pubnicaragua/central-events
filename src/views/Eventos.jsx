@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
-import { Plus, Search, Calendar, Loader } from "lucide-react"
+import { Plus, Search, Calendar, Loader, AlertCircle } from "lucide-react"
 import supabase from "../api/supabase"
 import EventCard from "../components/events/EventCard"
 import CreateEventModal from "../components/events/CreateEventModal"
@@ -18,6 +18,7 @@ function Events() {
   const [userRoleId, setUserRoleId] = useState(null)
   const [error, setError] = useState(null)
   const [eventDetails, setEventDetails] = useState({})
+  const [noAssignedEvents, setNoAssignedEvents] = useState(false)
   const navigate = useNavigate()
 
   function printError(tablename, action, error) {
@@ -54,39 +55,80 @@ function Events() {
   }, [])
 
   useEffect(() => {
-    fetchEvents()
+    if (userId && userRoleId !== null) {
+      fetchEvents()
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab, sortOrder])
+  }, [activeTab, sortOrder, userId, userRoleId])
 
   async function fetchEvents() {
     setLoading(true)
     setError(null)
+    setNoAssignedEvents(false)
+
     try {
       const status = activeTab
-
-      // Definir el orden dinámicamente
       const isRecent = sortOrder === "recent"
+      let eventData = []
 
-      // Consulta sin filtro de usuario
-      const { data, error } = await supabase
-        .from("events")
-        .select("*")
-        .eq("status", status)
-        .order("start_date", { ascending: !isRecent })
+      // Si es administrador (role_id = 1), obtener todos los eventos
+      if (userRoleId === 1) {
+        const { data, error } = await supabase
+          .from("events")
+          .select("*")
+          .eq("status", status)
+          .order("start_date", { ascending: !isRecent })
 
-      if (error) throw error
+        if (error) throw error
+        eventData = data || []
+      }
+      // Si es organizador (role_id = 2) o empleado (role_id = 4), obtener solo eventos asignados
+      else {
+        // Primero obtenemos los event_id asignados al usuario desde user_profile
+        const { data: userProfileData, error: userProfileError } = await supabase
+          .from("user_profile")
+          .select("event_id")
+          .eq("auth_id", userId)
 
-      setEvents(data || [])
+        if (userProfileError) throw userProfileError
+
+        // Si el usuario tiene eventos asignados, filtramos por esos eventos
+        if (userProfileData && userProfileData.length > 0) {
+          const eventIds = userProfileData.map((profile) => profile.event_id).filter(Boolean)
+
+          if (eventIds.length > 0) {
+            const { data, error } = await supabase
+              .from("events")
+              .select("*")
+              .eq("status", status)
+              .in("id", eventIds)
+              .order("start_date", { ascending: !isRecent })
+
+            if (error) throw error
+            eventData = data || []
+          } else {
+            // No tiene eventos asignados
+            setNoAssignedEvents(true)
+            eventData = []
+          }
+        } else {
+          // No tiene perfil o no tiene eventos asignados
+          setNoAssignedEvents(true)
+          eventData = []
+        }
+      }
+
+      setEvents(eventData)
 
       // Fetch additional details for each event
-      if (data && data.length > 0) {
+      if (eventData && eventData.length > 0) {
         const details = {}
 
-        for (const event of data) {
+        for (const event of eventData) {
           // Get organizer info
           const { data: organizerData, error: organizerError } = await supabase
             .from("user_profile")
-            .select("auth_id, users(name, second_name)")
+            .select("auth_id, user_role(role_id")
             .eq("event_id", event.id)
             .eq("users.role_id", 2) // Role ID 2 is for organizers
             .single()
@@ -98,7 +140,7 @@ function Events() {
 
           // Get attendee count
           const { count: attendeeCount, error: attendeeError } = await supabase
-            .from("attendees")
+            .from("attendants")
             .select("id", { count: "exact", head: true })
             .eq("event_id", event.id)
 
@@ -108,7 +150,7 @@ function Events() {
 
           // Get checked-in count
           const { count: checkedInCount, error: checkedInError } = await supabase
-            .from("attendees")
+            .from("attendants")
             .select("id", { count: "exact", head: true })
             .eq("event_id", event.id)
             .eq("checked_in", true)
@@ -297,6 +339,12 @@ function Events() {
                 <Loader className="h-12 w-12 animate-spin text-emerald-700 mx-auto mb-4" />
                 <p className="text-emerald-800">Cargando eventos...</p>
               </div>
+            ) : noAssignedEvents ? (
+              <div className="text-center py-16 bg-emerald-50 rounded-xl border border-emerald-100">
+                <AlertCircle className="w-16 h-16 text-amber-400 mx-auto mb-4" />
+                <h3 className="text-xl font-medium text-emerald-800 mb-2">Aún no tienes eventos asignados</h3>
+                <p className="text-emerald-600 mb-4">Contacta con un administrador para que te asigne eventos.</p>
+              </div>
             ) : filteredEvents.length > 0 ? (
               filteredEvents.map((event) => (
                 <EventCard
@@ -313,12 +361,14 @@ function Events() {
               <div className="text-center py-16 bg-emerald-50 rounded-xl border border-emerald-100">
                 <Calendar className="w-16 h-16 text-emerald-300 mx-auto mb-4" />
                 <p className="text-emerald-700 mb-4">No hay eventos para mostrar</p>
-                <button
-                  onClick={() => setShowCreateEventModal(true)}
-                  className="text-emerald-700 hover:text-emerald-900 font-medium bg-white px-5 py-2 rounded-lg shadow-sm border border-emerald-200 hover:bg-emerald-50 transition-colors"
-                >
-                  Crear tu primer evento
-                </button>
+                {userRoleId === 1 && (
+                  <button
+                    onClick={() => setShowCreateEventModal(true)}
+                    className="text-emerald-700 hover:text-emerald-900 font-medium bg-white px-5 py-2 rounded-lg shadow-sm border border-emerald-200 hover:bg-emerald-50 transition-colors"
+                  >
+                    Crear tu primer evento
+                  </button>
+                )}
               </div>
             )}
           </div>
