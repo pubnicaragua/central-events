@@ -3,6 +3,7 @@ import DashboardLayout from "./src/layouts/DashboardLayout"
 import AuthLayout from "./src/layouts/AuthLayout"
 import AdminLayout from "./src/layouts/AdminLayout"
 import ProtectedRoute from "./src/components/ProtectedRoute"
+import Layout from "./src/layouts/Layout"
 
 import Login from "./src/views/Login"
 import Register from "./src/views/Register"
@@ -51,8 +52,9 @@ const ROLE_PERMISSIONS = {
   eventAttendees: [1, 2],
   eventCapacity: [1],
   eventCheckIn: [1, 4],
+  eventEmployeeCheckIn: [1, 4],
   eventDashboard: [1, 2, 4],
-  EventEmployees: [1],
+  EventEmployees: [1, 4],
   eventGettingStarted: [1],
   eventMessages: [1],
   eventGuests: [1, 2],
@@ -105,6 +107,41 @@ const router = createBrowserRouter([
   {
     path: "/access-denied",
     element: <AccessDenied />,
+  },
+
+  //Ruta protegida para el empleado de check-ins
+  {
+    path: "/manage/event",
+    element: <ProtectedRoute allowedRoles={ROLE_PERMISSIONS.eventEmployeeCheckIn} />,
+    children: [
+      {
+        path: "",
+        element: <Layout />,
+        children: [
+          {
+            path: ":eventId/checkin",
+            element: <CheckInPage />
+          },
+        ]
+      }
+    ]
+  },
+  // Ruta protegida para usuario de check in
+  {
+    path: "/user",
+    element: <ProtectedRoute allowedRoles={ROLE_PERMISSIONS.adminProfile} />,
+    children: [
+      {
+        path: "",
+        element: <Layout />,
+        children: [
+          {
+            path: "profile",
+            element: <ProfilePage />
+          },
+        ]
+      }
+    ]
   },
   // Rutas protegidas para administradores
   {
@@ -346,6 +383,7 @@ const router = createBrowserRouter([
       },
     ],
   },
+
 ])
 
 export default router
