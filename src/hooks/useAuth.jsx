@@ -5,15 +5,15 @@ import { AuthContext } from "../context/AuthContext"
 import supabase from "../api/supabase"
 
 export default function useAuth() {
-    const { user, userRole, loading: authLoading } = useContext(AuthContext)
+    const { user, userRole } = useContext(AuthContext)
     const [modulePermissions, setModulePermissions] = useState({})
-    const [loading, setLoading] = useState(true)
+    //const [loading, setLoading] = useState(true)
 
     // Cargar permisos de módulos desde la base de datos
     useEffect(() => {
         const fetchModulePermissions = async () => {
             if (!userRole) {
-                setLoading(false)
+               // setLoading(false)
                 return
             }
 
@@ -39,7 +39,7 @@ export default function useAuth() {
                         fullAccess[module.module_key] = true
                     })
                     setModulePermissions(fullAccess)
-                    setLoading(false)
+                    //setLoading(false)
                     return
                 }
 
@@ -76,9 +76,7 @@ export default function useAuth() {
             } catch (error) {
                 console.error("Error al cargar permisos de módulos:", error)
                 // En caso de error, usar permisos por defecto (ningún acceso)
-            } finally {
-                setLoading(false)
-            }
+            } 
         }
 
         if (userRole !== null) {
@@ -92,7 +90,7 @@ export default function useAuth() {
     return {
         user,
         userRole,
-        loading: authLoading || loading,
+        //loading: authLoading || loading,
         isAuthenticated,
         modulePermissions,
 
@@ -110,5 +108,7 @@ export default function useAuth() {
 
         // Helper para verificar si es admin
         isAdmin: userRole === 1,
+        isOrganizer: userRole === 2,
+        isEmployee: userRole === 4
     }
 }
