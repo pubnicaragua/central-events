@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import supabase from "../api/supabase"
 import { UserPlus, Edit, Trash2, Key, Save, Upload, X } from "lucide-react"
 import ImportUsersModal from "../components/manage/ImportUsersModal"
+import { deleteUserCompletely } from "../components/lib/actions/users"
 
 const UsersPage = () => {
   const [users, setUsers] = useState([])
@@ -72,28 +73,29 @@ const UsersPage = () => {
     setModalVisible(true)
   }
 
+  // Modificar la función handleDeleteUser para llamar a una función serverless
   const handleDeleteUser = async (userId, authId) => {
     try {
-      // Primero eliminar registros relacionados
-      await supabase.from("user_roles").delete().eq("user_id", userId)
+      if (!window.confirm("¿Estás seguro de eliminar este usuario?")) {
+        return
+      }
 
-      // Luego eliminar el perfil de usuario
-      const { error: profileError } = await supabase.from("user_profile").delete().eq("id", userId)
+      setLoading(true)
 
-      if (profileError) throw profileError
+      // Usar la nueva función simplificada que aprovecha las eliminaciones en cascada
+      const { success, error } = await deleteUserCompletely(authId)
 
-      // Nota: La eliminación del usuario de auth.users debe hacerse a través de una función segura en el servidor
-      // ya que requiere permisos administrativos de Supabase
-      if (authId) {
-        // Esta parte requeriría una función serverless o un endpoint seguro
-        console.log("Se debería eliminar el usuario de auth.users con ID:", authId)
+      if (!success) {
+        throw new Error(error || "Error al eliminar usuario")
       }
 
       alert("Usuario eliminado correctamente")
       fetchUsers()
     } catch (error) {
       console.error("Error deleting user:", error)
-      alert("Error al eliminar usuario")
+      alert(`Error al eliminar usuario: ${error.message}`)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -297,11 +299,7 @@ const UsersPage = () => {
                           </button>
                           <button
                             className="flex items-center px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200"
-                            onClick={() => {
-                              if (window.confirm("¿Estás seguro de eliminar este usuario?")) {
-                                handleDeleteUser(user.id, user.auth_id)
-                              }
-                            }}
+                            onClick={() => handleDeleteUser(user.id, user.auth_id)}
                           >
                             <Trash2 className="h-4 w-4 mr-1" />
                             Eliminar
@@ -486,7 +484,6 @@ const UsersPage = () => {
           setImportModalVisible(false)
         }}
       />
-
     </div>
   )
 }
