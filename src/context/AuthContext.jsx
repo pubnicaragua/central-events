@@ -9,18 +9,18 @@ export const AuthContext = createContext()
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [userRole, setUserRole] = useState(null)
-  const [loading, setLoading] = useState(true)
+  //const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchUser = async () => {
-      setLoading(true)
+      //setLoading(true)
       const { data, error } = await supabase.auth.getUser()
 
       if (error || !data?.user) {
         console.error("Error obteniendo usuario:", error)
         setUser(null)
         setUserRole(null)
-        setLoading(false)
+        //setLoading(false)
         return
       }
 
@@ -51,7 +51,7 @@ export function AuthProvider({ children }) {
         setUserRole(null)
       }
 
-      setLoading(false)
+      //setLoading(false)
     }
 
     fetchUser()
@@ -68,7 +68,7 @@ export function AuthProvider({ children }) {
     }
   }, [])
 
-  return <AuthContext.Provider value={{ user, userRole, loading }}>{children}</AuthContext.Provider>
+  return <AuthContext.Provider value={{ user, userRole }}>{children}</AuthContext.Provider>
 }
 
 export function useAuth() {
