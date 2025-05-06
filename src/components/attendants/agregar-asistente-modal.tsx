@@ -24,9 +24,10 @@ const AgregarAsistenteModal: React.FC<AgregarAsistenteModalProps> = ({ isOpen, o
     name: "",
     second_name: "",
     email: "",
-    status: "no confirmado",
+    checked_in: true, // ✅ Por defecto confirmado
     ticket_id: null,
   })
+  
   const [sections, setSections] = useState([])
   const [selectedSection, setSelectedSection] = useState(null)
   const [amenities, setAmenities] = useState([])
@@ -155,7 +156,7 @@ const AgregarAsistenteModal: React.FC<AgregarAsistenteModalProps> = ({ isOpen, o
         name: "",
         second_name: "",
         email: "",
-        status: "no confirmado",
+        checked_in: false,
         ticket_id: null,
       })
       setSelectedSection(null)
@@ -174,7 +175,7 @@ const AgregarAsistenteModal: React.FC<AgregarAsistenteModalProps> = ({ isOpen, o
       name: "",
       second_name: "",
       email: "",
-      status: "no confirmado",
+      checked_in: false,
       ticket_id: null,
     })
     setSelectedSection(null)
@@ -235,20 +236,6 @@ const AgregarAsistenteModal: React.FC<AgregarAsistenteModalProps> = ({ isOpen, o
                   className={errors.email ? "border-red-500" : ""}
                 />
                 {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
-              </div>
-
-              <div>
-                <Label htmlFor="status">Estado</Label>
-                <Select value={formData.status} onValueChange={(value) => handleSelectChange("status", value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar estado" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="no confirmado">No confirmado</SelectItem>
-                    <SelectItem value="confirmado">Confirmado</SelectItem>
-                    <SelectItem value="cancelado">Cancelado</SelectItem>
-                  </SelectContent>
-                </Select>
               </div>
 
               <div>

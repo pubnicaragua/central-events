@@ -41,21 +41,30 @@ export default function LoginForm() {
     setLoading(true)
     setError("")
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
 
-    setLoading(false)
+      if (error) {
+        console.error("Error de login:", error.message)
+        setError("Correo o contraseña incorrectos.")
+        setLoading(false)
+        return
+      }
 
-    if (error) {
-      console.error("Error de login:", error.message)
-      setError("Correo o contraseña incorrectos.")
-      return
+      console.log("Usuario autenticado:", data)
+
+      // Esperar un momento antes de redirigir para asegurar que el contexto se actualice
+      setTimeout(() => {
+        navigate("/")
+      }, 500)
+    } catch (err) {
+      console.error("Error inesperado:", err)
+      setError("Ocurrió un error al iniciar sesión. Inténtalo de nuevo.")
+      setLoading(false)
     }
-
-    console.log("Usuario autenticado:", data)
-    navigate("/") // Redirigir a home u otra ruta
   }
 
   return (
@@ -105,8 +114,9 @@ export default function LoginForm() {
         <button
           type="submit"
           disabled={loading}
-          className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${loading ? "bg-gray-900" : "bg-gray-800 hover:bg-gray-950"
-            } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
+          className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
+            loading ? "bg-gray-900" : "bg-gray-800 hover:bg-gray-950"
+          } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
         >
           {loading ? "Cargando..." : "Iniciar Sesión"}
         </button>
@@ -121,4 +131,3 @@ export default function LoginForm() {
     </div>
   )
 }
-

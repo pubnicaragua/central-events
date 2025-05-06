@@ -4,11 +4,10 @@ import type React from "react"
 import { useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../../components/ui/dialog"
 import { Button } from "../../components/ui/button"
-import { Mail, Loader2, Check, AlertCircle } from 'lucide-react'
+import { Mail, Loader2, Check, AlertCircle } from "lucide-react"
 import { Alert, AlertDescription } from "../../components/ui/alert"
-// Importar EmailJS
-import emailjs from "@emailjs/browser"
 import QRCode from "qrcode"
+import supabase from "../../api/supabase"
 
 interface QrCodeModalProps {
   isOpen: boolean
@@ -32,9 +31,37 @@ const QrCodeModal: React.FC<QrCodeModalProps> = ({ isOpen, onClose, attendee, ev
     }
 
     try {
+      // Verificar el límite de 300 correos
+      const { data: notifiedData, error: countError } = await supabase
+        .from("attendants")
+        .select("id")
+        .eq("event_id", eventId || attendee.event_id)
+        .eq("notificated", true)
+
+      if (countError) {
+        throw new Error("Error al verificar el límite de correos")
+      }
+
+      const currentNotifiedCount = notifiedData?.length || 0
+
+      // Verificar si ya se alcanzó el límite
+      if (currentNotifiedCount >= 300) {
+        setEmailStatus({
+          type: "error",
+          message: "Tu configuración actual solo permite 300 correos al día.",
+        })
+        return
+      } else if (attendee.notificated) {
+        setEmailStatus({
+          type: "error",
+          message: `Este asistente ya fue notificado anteriormente.`,
+        })
+        return
+      }
+
       setIsSending(true)
       setEmailStatus({ type: null, message: null })
-      const attendeeLink = `http://localhost:5173/events/${eventId || attendee.event_id}?attendeeId=${attendee.id}`
+      const attendeeLink = `https://passkevents.com/events/${eventId || attendee.event_id}?attendeeId=${attendee.id}`
 
       const qrPayload = {
         attendeeId: attendee.id,
@@ -43,20 +70,44 @@ const QrCodeModal: React.FC<QrCodeModalProps> = ({ isOpen, onClose, attendee, ev
         name: `${attendee.name} ${attendee.second_name || ""}`.trim(),
       }
 
+      console.log(qrPayload)
+
       const qrDataUrl = await QRCode.toDataURL(JSON.stringify(qrPayload))
 
-      const templateParams = {
-        to_email: attendee.email,
-        to_name: `${attendee.name} ${attendee.second_name || ""}`.trim(),
-        attendee_code: attendee.code,
-        event_link: attendeeLink,
-        qr_image: qrDataUrl, // el QR con JSON embebido
+      const res = await fetch("https://beckfiitgbfzrkrmkrro.supabase.co/functions/v1/send-email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJlY2tmaWl0Z2JmenJrcm1rcnJvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzkzODMxNzIsImV4cCI6MjA1NDk1OTE3Mn0.XNVBOWP5WywfcddLjtsbDUi_f-RR4M0ij1MKg2D-Wqg`,
+        },
+        body: JSON.stringify({
+          to_email: attendee.email,
+          to_name: `${attendee.name} ${attendee.second_name || ""}`.trim(),
+          attendee_code: attendee.code,
+          qr_image: qrDataUrl,
+          event_link: attendeeLink,
+        }),
+      })
+
+      if (!res.ok) {
+        const errorData = await res.json()
+        throw new Error(errorData?.error || "Error al enviar el correo.")
       }
 
+      // Actualizar el campo notificated a true
+      const { error: updateError } = await supabase
+        .from("attendants")
+        .update({ notificated: true })
+        .eq("id", attendee.id)
 
-      await emailjs.send("service_ckfmlwl", "template_20jh7dj", templateParams, "pIiR9nD5kGdXBVnp7")
+      if (updateError) {
+        console.error("Error al actualizar estado de notificación:", updateError)
+      }
 
-      setEmailStatus({ type: "success", message: "Correo enviado exitosamente a " + attendee.email })
+      setEmailStatus({
+        type: "success",
+        message: `Correo enviado exitosamente a ${attendee.email}`,
+      })
     } catch (error) {
       console.error("Error al enviar el correo:", error)
       setEmailStatus({ type: "error", message: error instanceof Error ? error.message : "Error al enviar el correo" })

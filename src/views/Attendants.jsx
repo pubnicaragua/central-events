@@ -30,37 +30,56 @@ const AsistentesPage = () => {
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [tickets, setTickets] = useState([])
+  const [notifiedCount, setNotifiedCount] = useState(0)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalAttendees, setTotalAttendees] = useState(0)
+  const [bulkAttendees, setBulkAttendees] = useState([])
+  const attendeesPerPage = 20
+
 
   const { isAdmin } = useAuth()
 
   // Cargar asistentes
   useEffect(() => {
-    fetchAttendees()
-    fetchTickets()
-  }, [eventId])
+    if (eventId) {
+      fetchAttendees(currentPage, attendeesPerPage, searchQuery)
+      fetchTickets()
+      fetchNotifiedCount()
+    }
+  }, [eventId, currentPage, searchQuery])
 
-  const fetchAttendees = async () => {
+  const fetchAttendees = async (page = 1, limit = 20, search = "") => {
+    const from = (page - 1) * limit
+    const to = from + limit - 1
+
     try {
       setIsLoading(true)
-      const { data, error } = await supabase
+
+      let query = supabase
         .from("attendants")
-        .select(`
-          *,
-          tickets(name)
-        `)
+        .select(`*, tickets(name)`, { count: "exact" })
         .eq("event_id", eventId)
         .order("created_at", { ascending: false })
+        .range(from, to)
+
+      if (search.trim()) {
+        query = query.or(`name.ilike.%${search}%,second_name.ilike.%${search}%,code.ilike.%${search}%`)
+      }
+
+      const { data, error, count } = await query
 
       if (error) throw error
 
-      console.log("Asistentes:", data)
       setAttendees(data || [])
+      setTotalAttendees(count || 0)
+
     } catch (error) {
       console.error("Error al cargar los asistentes:", error)
     } finally {
       setIsLoading(false)
     }
   }
+
 
   const fetchTickets = async () => {
     try {
@@ -72,6 +91,37 @@ const AsistentesPage = () => {
     } catch (error) {
       console.error("Error al cargar los tickets:", error)
     }
+  }
+
+  const fetchNotifiedCount = async () => {
+    try {
+      const { count, error } = await supabase
+        .from("attendants")
+        .select("id", { count: "exact", head: true }) // `head: true` optimiza la consulta
+        .eq("event_id", eventId)
+        .eq("notificated", true)
+
+      if (error) throw error
+
+      setNotifiedCount(count || 0)
+    } catch (error) {
+      console.error("Error al contar correos enviados:", error)
+    }
+  }
+
+  // Fetch all attendees (for the bulk email modal)
+  const fetchAllAttendees = async () => {
+    const { data, error } = await supabase
+      .from("attendants")
+      .select(`*, tickets(name)`)
+      .eq("event_id", eventId)
+
+    if (error) {
+      console.error("Error al obtener todos los asistentes:", error)
+      return []
+    }
+
+    return data || []
   }
 
   // Agregar asistente
@@ -94,6 +144,7 @@ const AsistentesPage = () => {
           ticket_id: attendantData.ticket_id,
           code,
           event_id: eventId,
+          notificated: false, // Asegurarse de que el nuevo asistente tenga notificated en false
         })
         .select()
 
@@ -135,6 +186,7 @@ const AsistentesPage = () => {
           email: attendantData.email,
           checked_in: attendantData.checked_in,
           ticket_id: attendantData.ticket_id,
+          notificated: attendantData.notificated, // Asegurarse de que el asistente tenga notificated en false
         })
         .eq("id", selectedAttendee.id)
 
@@ -249,15 +301,6 @@ const AsistentesPage = () => {
     document.body.removeChild(link)
   }
 
-  const filteredAttendees = attendees.filter((attendee) => {
-    const searchLower = searchQuery.toLowerCase()
-    return (
-      (attendee.name && attendee.name.toLowerCase().includes(searchLower)) ||
-      (attendee.second_name && attendee.second_name.toLowerCase().includes(searchLower)) ||
-      (attendee.code && attendee.code.toLowerCase().includes(searchLower))
-    )
-  })
-
   const getchecked_inBadge = (checked_in) => {
     if (checked_in) {
       return <Badge className="bg-green-500">Confirmado</Badge>
@@ -266,6 +309,21 @@ const AsistentesPage = () => {
     }
   }
 
+  const handleOpenBulkEmail = async () => {
+    const allAtts = await fetchAllAttendees()
+    setBulkAttendees(allAtts)
+    setBulkEmailModalOpen(true)
+  }
+
+
+  // Manejar cuando se envían correos exitosamente
+  const handleEmailSent = () => {
+    fetchAttendees(currentPage, attendeesPerPage, searchQuery)
+    fetchNotifiedCount() // Actualizar el conteo de correos enviados
+  }
+
+  const totalPages = Math.ceil(totalAttendees / attendeesPerPage)
+
   return (
     <div className="p-4 max-w-7xl mx-auto">
       <div className="flex justify-between items-center mb-6">
@@ -273,12 +331,17 @@ const AsistentesPage = () => {
         <div className="flex gap-2">
           <Button
             variant="outline"
-            onClick={() => setBulkEmailModalOpen(true)}
+            onClick={handleOpenBulkEmail} // ✅ ahora sí se cargan todos los asistentes
             className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
+            disabled={notifiedCount >= 300}
           >
             <Mail className="w-4 h-4" />
-            Enviar correos
+            Enviar correos ({notifiedCount}/300)
           </Button>
+
+          {notifiedCount >= 300 && (
+            <div className="text-red-500 text-xs mt-1">Has alcanzado el límite de 300 correos diarios.</div>
+          )}
           <Button variant="outline" onClick={handleExport} className="flex items-center gap-2">
             <Download className="w-4 h-4" />
             Exportar
@@ -306,7 +369,7 @@ const AsistentesPage = () => {
 
       {isLoading ? (
         <div className="text-center py-8">Cargando...</div>
-      ) : filteredAttendees.length === 0 ? (
+      ) : attendees.length === 0 ? (
         <div className="text-center py-8 text-gray-500">No hay asistentes registrados</div>
       ) : (
         <div className="overflow-x-auto bg-white rounded-lg shadow">
@@ -318,11 +381,12 @@ const AsistentesPage = () => {
                 <th className="px-4 py-3 text-left">CÓDIGO</th>
                 <th className="px-4 py-3 text-left">TICKET</th>
                 <th className="px-4 py-3 text-left">ESTADO</th>
+                <th className="px-4 py-3 text-center">NOTIFICADO</th>
                 <th className="px-4 py-3 text-right">ACCIONES</th>
               </tr>
             </thead>
             <tbody>
-              {filteredAttendees.map((attendee) => (
+              {attendees.map((attendee) => (
                 <tr key={attendee.id} className="border-b">
                   <td className="px-4 py-4">
                     {attendee.name} {attendee.second_name}
@@ -333,6 +397,13 @@ const AsistentesPage = () => {
                   </td>
                   <td className="px-4 py-4">{attendee.tickets?.name || "-"}</td>
                   <td className="px-4 py-4">{getchecked_inBadge(attendee.checked_in)}</td>
+                  <td className="px-4 py-4 text-center">
+                    {attendee.notificated ? (
+                      <Badge className="bg-green-500">Sí</Badge>
+                    ) : (
+                      <Badge variant="outline">No</Badge>
+                    )}
+                  </td>
                   <td className="px-4 py-4">
                     <div className="flex justify-end gap-2">
                       <Button
@@ -390,6 +461,18 @@ const AsistentesPage = () => {
               ))}
             </tbody>
           </table>
+
+          <div className="flex justify-center items-center gap-2 mt-6">
+            <Button onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))} disabled={currentPage === 1}>
+              Anterior
+            </Button>
+            <span className="text-sm text-gray-700">
+              Página {currentPage} de {totalPages}
+            </span>
+            <Button onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))} disabled={currentPage === totalPages}>
+              Siguiente
+            </Button>
+          </div>
         </div>
       )}
 
@@ -426,7 +509,13 @@ const AsistentesPage = () => {
 
       {/* Modal para generar QR */}
       {selectedAttendee && (
-        <QrCodeModal isOpen={qrCodeModalOpen} onClose={() => setQrCodeModalOpen(false)} attendee={selectedAttendee} />
+        <QrCodeModal
+          isOpen={qrCodeModalOpen}
+          onClose={() => setQrCodeModalOpen(false)}
+          attendee={selectedAttendee}
+          onEmailSent={handleEmailSent}
+          emailsSentToday={notifiedCount}
+        />
       )}
 
       {/* Modal para importar asistentes desde Excel */}
@@ -442,8 +531,10 @@ const AsistentesPage = () => {
       <BulkEmailModal
         isOpen={bulkEmailModalOpen}
         onClose={() => setBulkEmailModalOpen(false)}
-        attendees={attendees}
+        attendees={bulkAttendees} // ✅ Esto son todos
         eventId={eventId}
+        onEmailSent={handleEmailSent}
+        emailsSentToday={notifiedCount}
       />
 
       {/* Modal de confirmación para eliminar */}

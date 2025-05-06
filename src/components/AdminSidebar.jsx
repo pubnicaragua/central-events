@@ -1,7 +1,7 @@
 "use client"
 
 import { Link, useLocation } from "react-router-dom"
-import { CalendarPlus, UserPlus, Lock, UserRound, Bell, Puzzle } from "lucide-react"
+import { CalendarPlus, UserPlus, Lock, UserRound, Puzzle, Video } from "lucide-react"
 import LogoutButton from "./LogoutButton"
 import useAuth from "../hooks/useAuth"
 
@@ -14,7 +14,6 @@ function Sidebar() {
             <div className="flex h-full max-h-screen flex-col">
                 <div className="flex h-[60px] items-center border-b border-emerald-800 px-6">
                     <Link to="/admin/events" className="flex items-center gap-2 font-semibold text-white">
-
                         <span className="text-lg">Inicio</span>
                     </Link>
                 </div>
@@ -27,8 +26,8 @@ function Sidebar() {
                                     <Link
                                         to={"/admin/events"}
                                         className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-colors duration-200 ${location.pathname === "/admin/events"
-                                            ? "bg-emerald-950 text-white font-medium"
-                                            : "text-emerald-100 hover:bg-emerald-800 hover:text-white"
+                                                ? "bg-emerald-950 text-white font-medium"
+                                                : "text-emerald-100 hover:bg-emerald-800 hover:text-white"
                                             }`}
                                     >
                                         <CalendarPlus className="h-4 w-4" />
@@ -40,8 +39,8 @@ function Sidebar() {
                                     <Link
                                         to={"/admin/users"}
                                         className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-colors duration-200 ${location.pathname === "/admin/users"
-                                            ? "bg-emerald-950 text-white font-medium"
-                                            : "text-emerald-100 hover:bg-emerald-800 hover:text-white"
+                                                ? "bg-emerald-950 text-white font-medium"
+                                                : "text-emerald-100 hover:bg-emerald-800 hover:text-white"
                                             }`}
                                     >
                                         <UserPlus className="h-4 w-4" />
@@ -53,8 +52,8 @@ function Sidebar() {
                                     <Link
                                         to={"/admin/roles"}
                                         className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-colors duration-200 ${location.pathname === "/admin/roles"
-                                            ? "bg-emerald-950 text-white font-medium"
-                                            : "text-emerald-100 hover:bg-emerald-800 hover:text-white"
+                                                ? "bg-emerald-950 text-white font-medium"
+                                                : "text-emerald-100 hover:bg-emerald-800 hover:text-white"
                                             }`}
                                     >
                                         <Lock className="h-4 w-4" />
@@ -66,8 +65,8 @@ function Sidebar() {
                                     <Link
                                         to={"/admin/profile"}
                                         className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-colors duration-200 ${location.pathname === "/admin/profile"
-                                            ? "bg-emerald-950 text-white font-medium"
-                                            : "text-emerald-100 hover:bg-emerald-800 hover:text-white"
+                                                ? "bg-emerald-950 text-white font-medium"
+                                                : "text-emerald-100 hover:bg-emerald-800 hover:text-white"
                                             }`}
                                     >
                                         <UserRound className="h-4 w-4" />
@@ -79,12 +78,25 @@ function Sidebar() {
                                     <Link
                                         to={"/admin/modules"}
                                         className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-colors duration-200 ${location.pathname === "/admin/modules"
-                                            ? "bg-emerald-950 text-white font-medium"
-                                            : "text-emerald-100 hover:bg-emerald-800 hover:text-white"
+                                                ? "bg-emerald-950 text-white font-medium"
+                                                : "text-emerald-100 hover:bg-emerald-800 hover:text-white"
                                             }`}
                                     >
                                         <Puzzle className="h-4 w-4" />
                                         Permisos de modulos
+                                    </Link>
+                                )}
+
+                                {hasPermission("adminTraining") && (
+                                    <Link
+                                        to={"/admin/training"}
+                                        className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-colors duration-200 ${location.pathname === "/admin/training"
+                                                ? "bg-emerald-950 text-white font-medium"
+                                                : "text-emerald-100 hover:bg-emerald-800 hover:text-white"
+                                            }`}
+                                    >
+                                        <Video className="h-4 w-4" />
+                                        Capacitaciones
                                     </Link>
                                 )}
                             </div>
@@ -107,4 +119,3 @@ function Sidebar() {
 }
 
 export default Sidebar
-

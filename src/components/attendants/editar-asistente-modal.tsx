@@ -34,7 +34,9 @@ const EditarAsistenteModal: React.FC<EditarAsistenteModalProps> = ({
     email: "",
     checked_in: false,
     ticket_id: null,
+    notificated: false, // ✅ nuevo campo
   })
+
   const [sections, setSections] = useState([])
   const [selectedSection, setSelectedSection] = useState(null)
   const [amenities, setAmenities] = useState([])
@@ -52,7 +54,9 @@ const EditarAsistenteModal: React.FC<EditarAsistenteModalProps> = ({
         email: attendee.email || "",
         checked_in: attendee.checked_in || false,
         ticket_id: attendee.ticket_id || null,
+        notificated: attendee.notificated || false, // ✅ nuevo
       })
+
 
       fetchSections()
       fetchAttendeeAmenities()
@@ -288,6 +292,18 @@ const EditarAsistenteModal: React.FC<EditarAsistenteModalProps> = ({
                 </Select>
               </div>
             </TabsContent>
+
+            <div>
+              <Checkbox
+                id="notificated"
+                checked={formData.notificated}
+                onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, notificated: !!checked }))}
+              />
+              <Label htmlFor="notificated" className="ml-2">
+                Marcar como *NO notificado* para volver a enviar correo
+              </Label>
+            </div>
+
 
             <TabsContent value="amenidades" className="space-y-4 mt-4">
               <div>

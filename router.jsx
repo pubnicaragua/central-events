@@ -35,6 +35,7 @@ import ForgotPassword from "./src/views/ForgotPassword"
 import ResetPassword from "./src/views/ResetPassword"
 import Employees from "./src/views/EventEmployeesPage"
 import ModulesPage from "./src/views/ModulesPage"
+import TrainingPage from "./src/views/TrainingPage"
 
 // Definición de permisos por rol
 // 1: Admin, 2: Organizador, 3: Asistente, 4: Empleado
@@ -45,6 +46,7 @@ const ROLE_PERMISSIONS = {
   adminUsers: [1],
   adminRoles: [1],
   adminModules: [1],
+  adminTraining: [1, 2, 4],
   //adminNotifications: [1],
 
   // Rutas de gestión de eventos
@@ -76,6 +78,7 @@ const router = createBrowserRouter([
     path: "reset-password",
     element: <ResetPassword />,
   },
+
   {
     path: "/auth",
     element: <AuthLayout />,
@@ -94,6 +97,7 @@ const router = createBrowserRouter([
       },
     ],
   },
+
   // Rutas públicas para eventos
   {
     path: "/events/:eventId",
@@ -195,7 +199,17 @@ const router = createBrowserRouter([
                 element: <ModulesPage />,
               },
             ],
-          }
+          },
+          {
+            path: "admin/training",
+            element: <ProtectedRoute allowedRoles={ROLE_PERMISSIONS.adminTraining} />,
+            children: [
+              {
+                path: "",
+                element: <TrainingPage />,
+              },
+            ],
+          },
         ],
       },
     ],
